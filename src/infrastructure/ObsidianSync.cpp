@@ -40,10 +40,13 @@ auto ObsidianSync::syncText(std::string_view text) -> bool {
 
     const fs::path vaultDir{m_vaultPath};
     if (!fs::exists(vaultDir) || !fs::is_directory(vaultDir)) {
-        std::cerr << "[ObsidianSync] Error: vault path does not exist or "
-                     "is not a directory: "
-                  << m_vaultPath << '\n';
-        return false;
+        std::error_code ec;
+        fs::create_directories(vaultDir, ec);
+        if (ec) {
+            std::cerr << "[ObsidianSync] Error: failed to create vault directory: "
+                      << m_vaultPath << '\n';
+            return false;
+        }
     }
 
     const fs::path logFilePath = vaultDir / m_logFileName;
@@ -99,8 +102,12 @@ void ObsidianSync::appendTodo(const TaskItem& task) {
 
     const fs::path vaultDir{m_vaultPath};
     if (!fs::exists(vaultDir) || !fs::is_directory(vaultDir)) {
-        std::cerr << "[ObsidianSync] Error: vault path does not exist or is not a directory: " << m_vaultPath << '\n';
-        return;
+        std::error_code ec;
+        fs::create_directories(vaultDir, ec);
+        if (ec) {
+            std::cerr << "[ObsidianSync] Error: failed to create vault directory: " << m_vaultPath << '\n';
+            return;
+        }
     }
 
     const fs::path taskFilePath = vaultDir / "FocusTasks.md";
