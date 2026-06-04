@@ -38,7 +38,7 @@ public:
     Q_INVOKABLE void updateTaskText(int index, const QString& newText);
     Q_INVOKABLE void deleteTask(int index);
 
-    void loadTasks();
+    Q_INVOKABLE void loadTasks();
 
 private:
     std::shared_ptr<brain::infrastructure::ObsidianSync> m_sync;
