@@ -100,6 +100,8 @@ auto main(int argc, char* argv[]) -> int {
         "timerViewModel", timerViewModel.get());
     engine.rootContext()->setContextProperty(
         "todoListModel", todoListModel.get());
+    engine.rootContext()->setContextProperty(
+        "audioController", audioController.get());
 
     // Handle QML loading errors gracefully
     QObject::connect(

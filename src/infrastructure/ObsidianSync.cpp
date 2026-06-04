@@ -154,4 +154,65 @@ void ObsidianSync::updateTask(int index, bool isCompleted) {
     }
 }
 
+void ObsidianSync::updateTaskText(int index, std::string_view newText) {
+    if (m_vaultPath.empty() || index < 0) return;
+
+    const fs::path taskFilePath = fs::path{m_vaultPath} / "FocusTasks.md";
+    std::ifstream ifs{taskFilePath};
+    if (!ifs.is_open()) return;
+
+    std::vector<std::string> lines;
+    std::string line;
+    int currentTaskIndex = 0;
+
+    while (std::getline(ifs, line)) {
+        if (line.starts_with("- [ ] ") || line.starts_with("- [x] ") || line.starts_with("- [X] ")) {
+            if (currentTaskIndex == index) {
+                line = line.substr(0, 6) + std::string(newText);
+            }
+            currentTaskIndex++;
+        }
+        lines.push_back(line);
+    }
+    ifs.close();
+
+    std::ofstream ofs{taskFilePath, std::ios::trunc};
+    if (!ofs.is_open()) return;
+
+    for (const auto& l : lines) {
+        ofs << l << '\n';
+    }
+}
+
+void ObsidianSync::deleteTask(int index) {
+    if (m_vaultPath.empty() || index < 0) return;
+
+    const fs::path taskFilePath = fs::path{m_vaultPath} / "FocusTasks.md";
+    std::ifstream ifs{taskFilePath};
+    if (!ifs.is_open()) return;
+
+    std::vector<std::string> lines;
+    std::string line;
+    int currentTaskIndex = 0;
+
+    while (std::getline(ifs, line)) {
+        if (line.starts_with("- [ ] ") || line.starts_with("- [x] ") || line.starts_with("- [X] ")) {
+            if (currentTaskIndex == index) {
+                currentTaskIndex++;
+                continue; // Skip this line to delete it
+            }
+            currentTaskIndex++;
+        }
+        lines.push_back(line);
+    }
+    ifs.close();
+
+    std::ofstream ofs{taskFilePath, std::ios::trunc};
+    if (!ofs.is_open()) return;
+
+    for (const auto& l : lines) {
+        ofs << l << '\n';
+    }
+}
+
 } // namespace brain::infrastructure

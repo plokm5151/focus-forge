@@ -92,6 +92,19 @@ public:
      */
     virtual void updateTask(int index, bool isCompleted) = 0;
 
+    /**
+     * @brief Updates the text of an existing task.
+     * @param index The zero-based index of the task.
+     * @param newText The new text for the task.
+     */
+    virtual void updateTaskText(int index, std::string_view newText) = 0;
+
+    /**
+     * @brief Deletes a task.
+     * @param index The zero-based index of the task.
+     */
+    virtual void deleteTask(int index) = 0;
+
     // --- Deleted copy/move to prevent slicing ---
     INoteSync(const INoteSync&) = delete;
     INoteSync& operator=(const INoteSync&) = delete;

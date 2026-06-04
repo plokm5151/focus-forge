@@ -51,6 +51,23 @@ AudioController::AudioController(QObject* parent)
     });
 }
 
+auto AudioController::isMuted() const noexcept -> bool {
+    return m_isMuted;
+}
+
+void AudioController::setMuted(bool muted) {
+    if (m_isMuted == muted) return;
+    
+    m_isMuted = muted;
+    m_bgOutput->setMuted(m_isMuted);
+    m_bellOutput->setMuted(m_isMuted);
+    emit isMutedChanged(m_isMuted);
+}
+
+void AudioController::toggleMute() {
+    setMuted(!m_isMuted);
+}
+
 void AudioController::onTimerStateChanged(TimerState newState, TimerState oldState) {
     Q_UNUSED(oldState);
 

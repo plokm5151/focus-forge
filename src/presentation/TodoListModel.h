@@ -31,6 +31,8 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
     Q_INVOKABLE void toggleTask(int index);
+    Q_INVOKABLE void updateTaskText(int index, const QString& newText);
+    Q_INVOKABLE void deleteTask(int index);
 
     void loadTasks();
 

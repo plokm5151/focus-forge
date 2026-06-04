@@ -71,6 +71,8 @@ public:
     
     [[nodiscard]] auto readTasks() const -> std::vector<TaskItem> override;
     void updateTask(int index, bool isCompleted) override;
+    void updateTaskText(int index, std::string_view newText) override;
+    void deleteTask(int index) override;
 
 private:
     std::string m_vaultPath;     ///< Absolute path to the Obsidian vault.

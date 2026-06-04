@@ -152,6 +152,17 @@ void TimerViewModel::pauseFocus() {
     setState(TimerState::Paused);
 }
 
+void TimerViewModel::stopFocus() {
+    if (m_state == TimerState::Idle) {
+        return;
+    }
+
+    m_tickTimer->stop();
+    m_remainingSeconds = m_focusDurationMinutes * 60;
+    emit remainingSecondsChanged(m_remainingSeconds);
+    setState(TimerState::Idle);
+}
+
 void TimerViewModel::submitTodo(const QString& text) {
     if (text.trimmed().isEmpty()) {
         return;

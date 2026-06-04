@@ -37,14 +37,35 @@ QHash<int, QByteArray> TodoListModel::roleNames() const {
 void TodoListModel::toggleTask(int index) {
     if (index < 0 || static_cast<std::size_t>(index) >= m_tasks.size()) return;
     
-    auto idx = static_cast<std::size_t>(index);
-    m_tasks[idx].isCompleted = !m_tasks[idx].isCompleted;
+    auto& task = m_tasks[index];
+    task.isCompleted = !task.isCompleted;
+    
+    m_sync->updateTask(index, task.isCompleted);
+    
     emit dataChanged(createIndex(index, 0), createIndex(index, 0), {IsCompletedRole});
+}
 
-    // Save back to Obsidian
-    if (m_sync) {
-        m_sync->updateTask(index, m_tasks[idx].isCompleted);
-    }
+void TodoListModel::updateTaskText(int index, const QString& newText) {
+    if (index < 0 || index >= static_cast<int>(m_tasks.size())) return;
+    if (newText.trimmed().isEmpty()) return;
+
+    auto& task = m_tasks[index];
+    if (task.text == newText) return;
+
+    task.text = newText;
+    m_sync->updateTaskText(index, newText.toStdString());
+
+    emit dataChanged(createIndex(index, 0), createIndex(index, 0), {DisplayRole});
+}
+
+void TodoListModel::deleteTask(int index) {
+    if (index < 0 || index >= static_cast<int>(m_tasks.size())) return;
+
+    beginRemoveRows(QModelIndex(), index, index);
+    m_tasks.erase(m_tasks.begin() + index);
+    endRemoveRows();
+
+    m_sync->deleteTask(index);
 }
 
 void TodoListModel::loadTasks() {

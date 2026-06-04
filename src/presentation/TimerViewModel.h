@@ -152,6 +152,11 @@ public:
     Q_INVOKABLE void pauseFocus();
 
     /**
+     * @brief Stops the current session and resets the timer to Idle.
+     */
+    Q_INVOKABLE void stopFocus();
+
+    /**
      * @brief Submits a new task to the note sync strategy.
      * @param text The task description.
      */

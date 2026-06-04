@@ -75,17 +75,44 @@ Rectangle {
                         }
                     }
 
-                    Text {
+                    TextField {
+                        id: taskTextField
                         Layout.fillWidth: true
                         text: display // from role DisplayRole
                         font.pixelSize: 14
                         font.family: "Inter, Segoe UI, sans-serif"
                         color: taskCheck.checked ? "#8888aa" : "#ffffff"
                         font.strikeout: taskCheck.checked
-                        verticalAlignment: Text.AlignVCenter
-                        elide: Text.ElideRight
+                        verticalAlignment: TextInput.AlignVCenter
+                        background: Rectangle { color: "transparent" }
+
+                        // Allow editing
+                        readOnly: taskCheck.checked
+
+                        onEditingFinished: {
+                            if (text.trim() !== display) {
+                                todoListModel.updateTaskText(index, text.trim());
+                            }
+                        }
 
                         Behavior on color { ColorAnimation { duration: 150 } }
+                    }
+
+                    // Delete Button
+                    Button {
+                        id: delBtn
+                        text: "🗑️"
+                        font.pixelSize: 14
+                        Layout.preferredWidth: 32
+                        Layout.preferredHeight: 32
+                        background: Rectangle { color: "transparent" }
+                        opacity: delBtn.hovered ? 1.0 : 0.0
+                        
+                        onClicked: {
+                            todoListModel.deleteTask(index);
+                        }
+                        
+                        Behavior on opacity { NumberAnimation { duration: 150 } }
                     }
                 }
                 
@@ -94,15 +121,16 @@ Rectangle {
                     anchors.fill: parent
                     color: "#ffffff0a"
                     radius: 8
-                    visible: mouseArea.containsMouse
+                    visible: mouseArea.containsMouse && !taskTextField.activeFocus
                 }
 
                 MouseArea {
                     id: mouseArea
                     anchors.fill: parent
                     hoverEnabled: true
-                    onClicked: {
-                        todoListModel.toggleTask(index);
+                    propagateComposedEvents: true
+                    onClicked: (mouse) => {
+                        mouse.accepted = false; // Let it pass to children
                     }
                 }
             }
