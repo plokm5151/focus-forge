@@ -1,9 +1,0 @@
-module FocusForgeApp
-typeinfo FocusForgeApp.qmltypes
-depends QtQuick
-prefer :/qt/qml/FocusForgeApp/
-Main 1.0 qml/Main.qml
-BreathingOrb 1.0 qml/components/BreathingOrb.qml
-QuickCapturePopup 1.0 qml/components/QuickCapturePopup.qml
-TodoListPanel 1.0 qml/components/TodoListPanel.qml
-

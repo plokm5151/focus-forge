@@ -1,3 +1,0 @@
-/Users/plokm/Downloads/focus-forge/build_release/FocusForgeApp_autogen/include/../6SNT27OU4Z/moc_AudioController.cpp.json
-/Users/plokm/Downloads/focus-forge/build_release/FocusForgeApp_autogen/include/../6SNT27OU4Z/moc_TimerViewModel.cpp.json
-/Users/plokm/Downloads/focus-forge/build_release/FocusForgeApp_autogen/include/../6SNT27OU4Z/moc_TodoListModel.cpp.json

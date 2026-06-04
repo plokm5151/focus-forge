@@ -1,6 +1,0 @@
-<RCC>
-  <qresource prefix="/">
-    <file alias="/qt/qml/FocusForgeApp">/Users/plokm/Downloads/focus-forge/build_release/FocusForgeApp</file>
-
-  </qresource>
-</RCC>
