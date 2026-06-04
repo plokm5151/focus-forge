@@ -109,6 +109,9 @@ ApplicationWindow {
 
         // ── Todo List Panel ──
         TodoListPanel {
+            id: todoListPanel
+            z: 10
+            visible: false
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.margins: 10
@@ -128,9 +131,7 @@ ApplicationWindow {
             // Start / Resume Button
             Button {
                 id: startBtn
-                text: timerViewModel.currentStateName === "Idle"
-                      ? qsTr("▶  Start Focus")
-                      : (timerViewModel.currentStateName === "Focusing" ? qsTr("⏸ Pause") : qsTr("▶  Continue"))
+                text: timerViewModel.currentStateName === "Idle" ? "Start Focus" : "Pause"
                 enabled: true
                 scale: pressed ? 0.95 : 1.0
 
@@ -142,7 +143,7 @@ ApplicationWindow {
                     }
                 }
 
-                Behavior on scale { NumberAnimation { duration: 150 } }
+                Behavior on scale { NumberAnimation { duration: 100 } }
 
                 contentItem: Text {
                     text: startBtn.text
@@ -186,13 +187,11 @@ ApplicationWindow {
 
     // ── Quick Capture Shortcut & Popup ──
     Shortcut {
-        sequence: StandardKey.AddTab // Often maps to Ctrl+T / Cmd+T
-        onActivated: quickCapturePopup.open()
-    }
-
-    Shortcut {
         sequence: "Ctrl+T"
-        onActivated: quickCapturePopup.open()
+        onActivated: {
+            todoListPanel.visible = !todoListPanel.visible;
+            if (todoListPanel.visible) todoListPanel.forceActiveFocus();
+        }
     }
 
     QuickCapturePopup {

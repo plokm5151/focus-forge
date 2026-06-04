@@ -204,6 +204,14 @@ if(BUILD_TESTING)
         Qt6::Multimedia
     )
 
+    qt_add_resources(NeuroDashTests "test_audio_resources"
+        PREFIX "/"
+        FILES
+            assets/audio/bell.wav
+            assets/audio/focus.ogg
+            assets/audio/cooldown.mp3
+    )
+
     add_custom_command(TARGET NeuroDashTests POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_CURRENT_SOURCE_DIR}/assets

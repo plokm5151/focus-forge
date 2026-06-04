@@ -28,7 +28,12 @@ cmake -B build_release -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -Wno-dev
 echo "==> Building FocusForgeApp..."
 cmake --build build_release --parallel
 
-# ---- Step 3: Aggressive macdeployqt ----
+# ---- Step 3: Bundle Audio Assets ----
+echo "==> Bundling native audio assets..."
+mkdir -p "$APP_BUNDLE/Contents/Resources/assets/audio"
+cp -R assets/audio/* "$APP_BUNDLE/Contents/Resources/assets/audio/"
+
+# ---- Step 4: Aggressive macdeployqt ----
 echo "==> Running macdeployqt with explicit library path..."
 macdeployqt "$APP_BUNDLE" \
     -libpath="$BREW_QT_PATH/lib" \
@@ -36,7 +41,7 @@ macdeployqt "$APP_BUNDLE" \
     -always-overwrite \
     -verbose=2
 
-# ---- Step 4: Manual framework patching ----
+# ---- Step 5: Manual framework patching ----
 # macdeployqt sometimes misses transitive dependencies.
 # We brute-force copy any missing frameworks that the binary needs.
 echo "==> Scanning for missing frameworks..."

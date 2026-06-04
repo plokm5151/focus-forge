@@ -5,6 +5,7 @@
 
 # --- Build Directories ---
 build/
+build_release/
 cmake-build-*/
 out/
 bin/

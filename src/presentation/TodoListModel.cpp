@@ -16,9 +16,9 @@ int TodoListModel::rowCount(const QModelIndex& parent) const {
 }
 
 QVariant TodoListModel::data(const QModelIndex& index, int role) const {
-    if (!index.isValid() || index.row() >= m_tasks.size()) return {};
+    if (!index.isValid() || index.row() < 0 || static_cast<std::size_t>(index.row()) >= m_tasks.size()) return {};
 
-    const auto& item = m_tasks[index.row()];
+    const auto& item = m_tasks[static_cast<std::size_t>(index.row())];
     if (role == DisplayRole) {
         return item.text;
     } else if (role == IsCompletedRole) {
@@ -35,14 +35,15 @@ QHash<int, QByteArray> TodoListModel::roleNames() const {
 }
 
 void TodoListModel::toggleTask(int index) {
-    if (index < 0 || index >= m_tasks.size()) return;
+    if (index < 0 || static_cast<std::size_t>(index) >= m_tasks.size()) return;
     
-    m_tasks[index].isCompleted = !m_tasks[index].isCompleted;
+    auto idx = static_cast<std::size_t>(index);
+    m_tasks[idx].isCompleted = !m_tasks[idx].isCompleted;
     emit dataChanged(createIndex(index, 0), createIndex(index, 0), {IsCompletedRole});
 
     // Save back to Obsidian
     if (m_sync) {
-        m_sync->updateTask(index, m_tasks[index].isCompleted);
+        m_sync->updateTask(index, m_tasks[idx].isCompleted);
     }
 }
 

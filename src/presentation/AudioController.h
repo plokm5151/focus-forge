@@ -21,7 +21,6 @@
 #include <QObject>
 #include <QMediaPlayer>
 #include <QAudioOutput>
-#include <QSoundEffect>
 
 namespace brain::presentation {
 
@@ -54,7 +53,8 @@ public slots:
 private:
     QMediaPlayer* m_bgPlayer;    ///< Plays background loop audio.
     QAudioOutput* m_bgOutput;    ///< Audio output for the media player.
-    QSoundEffect* m_bellSound;   ///< Plays zero-latency pre-loaded WAV files.
+    QMediaPlayer* m_bellPlayer;  ///< Plays the transition bell using QMediaPlayer.
+    QAudioOutput* m_bellOutput;  ///< Audio output for the bell player.
 };
 
 } // namespace brain::presentation
