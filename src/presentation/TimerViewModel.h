@@ -179,6 +179,13 @@ signals:
      */
     void coolDownCompleted();
 
+    /**
+     * @brief Emitted when the timer state machine transitions.
+     * @param newState The new TimerState.
+     * @param oldState The previous TimerState.
+     */
+    void timerStateChanged(brain::domain::TimerState newState, brain::domain::TimerState oldState);
+
 private slots:
     /**
      * @brief Handles each tick of the internal QTimer.

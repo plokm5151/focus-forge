@@ -22,6 +22,7 @@
 #include "infrastructure/AppConfig.h"
 #include "infrastructure/ObsidianSync.h"
 #include "presentation/TimerViewModel.h"
+#include "presentation/AudioController.h"
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -65,6 +66,13 @@ auto main(int argc, char* argv[]) -> int {
     // 2. Inject the strategy into the ViewModel
     auto timerViewModel =
         std::make_unique<brain::presentation::TimerViewModel>(noteSync);
+
+    // 3. Create the AudioController and connect the state change signal
+    auto audioController = std::make_unique<brain::presentation::AudioController>();
+    QObject::connect(
+        timerViewModel.get(), &brain::presentation::TimerViewModel::timerStateChanged,
+        audioController.get(), &brain::presentation::AudioController::onTimerStateChanged
+    );
 
     // ---- QML Engine Setup ----
     QQmlApplicationEngine engine;

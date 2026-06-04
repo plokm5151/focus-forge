@@ -20,7 +20,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick ShaderTools)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick ShaderTools Multimedia)
 
 # ---- Strict Compiler Warnings ----
 add_library(project_warnings INTERFACE)
@@ -74,6 +74,8 @@ set(INFRASTRUCTURE_SOURCES
 set(PRESENTATION_SOURCES
     src/presentation/TimerViewModel.h
     src/presentation/TimerViewModel.cpp
+    src/presentation/AudioController.h
+    src/presentation/AudioController.cpp
 )
 
 set(QML_RESOURCES
@@ -100,6 +102,14 @@ target_link_libraries(${APP_TARGET} PRIVATE
     Qt6::Gui
     Qt6::Qml
     Qt6::Quick
+    Qt6::Multimedia
+)
+
+# ---- Copy Assets ----
+add_custom_command(TARGET ${APP_TARGET} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/assets
+        $<TARGET_FILE_DIR:${APP_TARGET}>/assets
 )
 
 # ---- Include Directories ----
@@ -159,6 +169,7 @@ if(BUILD_TESTING)
     # ---- Test Executable: NeuroDashTests ----
     add_executable(NeuroDashTests
         tests/TimerViewModelTests.cpp
+        tests/AudioControllerTests.cpp
         ${DOMAIN_SOURCES}
         ${INFRASTRUCTURE_SOURCES}
         ${PRESENTATION_SOURCES}
@@ -174,6 +185,13 @@ if(BUILD_TESTING)
         GTest::gmock
         Qt6::Core
         Qt6::Test
+        Qt6::Multimedia
+    )
+
+    add_custom_command(TARGET NeuroDashTests POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/assets
+            $<TARGET_FILE_DIR:NeuroDashTests>/assets
     )
 
     # ---- Register with CTest ----

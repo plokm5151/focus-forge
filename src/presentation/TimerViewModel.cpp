@@ -216,8 +216,10 @@ void TimerViewModel::setState(TimerState newState) {
     if (m_state == newState) {
         return;
     }
+    TimerState oldState = m_state;
     m_state = newState;
     emit currentStateNameChanged(stateToString(m_state));
+    emit timerStateChanged(m_state, oldState);
 }
 
 } // namespace brain::presentation
