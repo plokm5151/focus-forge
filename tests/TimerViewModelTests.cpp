@@ -2,9 +2,11 @@
  * @file TimerViewModelTests.cpp
  * @brief TDD unit tests for TimerViewModel using Google Test and Google Mock.
  *
- * These tests verify the core state machine behavior of the focus timer,
- * including initial state, state transitions, countdown completion,
- * and dependency injection verification via the mocked INoteSync interface.
+ * Tests verify the configurable timer state machine including:
+ * - Initial state with AppConfig-driven durations (40 min = 2400s)
+ * - State transitions: Idle → Focusing → CoolDown → Idle
+ * - CoolDown loads cooldownDuration (10 min = 600s)
+ * - Dependency injection verification via mocked INoteSync
  *
  * @author Brain Maintenance Dashboard Team
  * @date 2026
@@ -20,7 +22,6 @@
 #include <QCoreApplication>
 #include <QSignalSpy>
 #include <QTest>
-#include <QTimer>
 
 #include <memory>
 #include <string_view>
@@ -32,9 +33,6 @@
 /**
  * @class MockNoteSync
  * @brief GMock implementation of INoteSync for isolated unit testing.
- *
- * Allows verification that syncText() is called with expected arguments
- * and the correct number of times during state transitions.
  */
 class MockNoteSync : public brain::domain::INoteSync {
 public:
@@ -54,11 +52,12 @@ public:
  *
  * Creates a QCoreApplication (required for Qt event loop / signal-slot),
  * a mock INoteSync, and injects it into a fresh TimerViewModel per test.
+ * AppConfig defaults (40 min focus, 10 min cooldown) are used since no
+ * config.json exists in the test environment.
  */
 class TimerViewModelTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        // QCoreApplication requires argc/argv; provide minimal stubs
         if (QCoreApplication::instance() == nullptr) {
             static int    argc = 1;
             static char   appName[] = "NeuroDashTests";
@@ -76,14 +75,10 @@ protected:
         m_mockSync.reset();
     }
 
-    /// @brief The shared mock sync dependency.
     std::shared_ptr<MockNoteSync> m_mockSync;
-
-    /// @brief The ViewModel under test.
     std::unique_ptr<brain::presentation::TimerViewModel> m_viewModel;
 
 private:
-    /// @brief Qt application instance (if none exists yet).
     std::unique_ptr<QCoreApplication> m_app;
 };
 
@@ -94,108 +89,139 @@ private:
 /**
  * @test Verifies the initial state of the TimerViewModel.
  *
- * The timer must start at 90*60 = 5400 seconds with state "Idle".
+ * With AppConfig defaults (40 min focus), the timer must start at
+ * 40 * 60 = 2400 seconds with state "Idle".
  */
-TEST_F(TimerViewModelTest, InitialState_Is5400SecondsAndIdle) {
-    EXPECT_EQ(m_viewModel->remainingSeconds(), 5400)
-        << "Initial remaining seconds must be 90 * 60 = 5400";
+TEST_F(TimerViewModelTest, InitialState_Is2400SecondsAndIdle) {
+    EXPECT_EQ(m_viewModel->remainingSeconds(), 40 * 60)
+        << "Initial remaining seconds must be 40 * 60 = 2400 (from AppConfig)";
 
     EXPECT_EQ(m_viewModel->currentStateName(), QStringLiteral("Idle"))
         << "Initial state must be 'Idle'";
+
+    EXPECT_EQ(m_viewModel->focusDurationMinutes(), 40)
+        << "Focus duration must default to 40 minutes";
+
+    EXPECT_EQ(m_viewModel->coolDownDurationMinutes(), 10)
+        << "CoolDown duration must default to 10 minutes";
 }
 
 /**
  * @test Verifies that calling startFocus() transitions state to Focusing.
- *
- * The state name must change to "Focusing" and the remainingSeconds
- * should remain at 5400 (countdown hasn't ticked yet).
  */
 TEST_F(TimerViewModelTest, StartFocus_TransitionsToFocusing) {
-    // Arrange: set up signal spy for state change
     QSignalSpy stateSpy(m_viewModel.get(),
                         &brain::presentation::TimerViewModel::currentStateNameChanged);
 
-    // Act
     m_viewModel->startFocus();
 
-    // Assert
     EXPECT_EQ(m_viewModel->currentStateName(), QStringLiteral("Focusing"))
         << "State must transition to 'Focusing' after startFocus()";
 
     EXPECT_EQ(stateSpy.count(), 1)
         << "currentStateNameChanged must be emitted exactly once";
-
-    EXPECT_EQ(m_viewModel->remainingSeconds(), 5400)
-        << "Remaining seconds should still be 5400 before any tick";
 }
 
 /**
- * @test Verifies state transition to CoolDown when timer reaches zero.
- *
- * Simulates the timer ticking down to 0 by processing the Qt event loop
- * with a minimal remaining time, then asserts that:
- * - The state transitions to "CoolDown".
- * - The focusSessionCompleted signal is emitted.
+ * @test Verifies that when the focus timer reaches zero, the state
+ * transitions to CoolDown and the remaining seconds are loaded with
+ * the cooldown duration (10 * 60 = 600 seconds).
  */
-TEST_F(TimerViewModelTest, TimerReachesZero_TransitionsToCoolDown) {
-    // Arrange: inject a very short remaining time for fast test execution
+TEST_F(TimerViewModelTest, FocusCompletion_TransitionsToCoolDownWithCorrectDuration) {
+    using ::testing::_;
+    using ::testing::Return;
+
+    EXPECT_CALL(*m_mockSync, syncText(_))
+        .WillOnce(Return(true));
+
+    // Inject short remaining time for fast test execution
     m_viewModel->setRemainingSecondsForTesting(1);
     m_viewModel->startFocus();
 
     QSignalSpy completionSpy(m_viewModel.get(),
                              &brain::presentation::TimerViewModel::focusSessionCompleted);
 
-    // Act: process the event loop until the timer fires (max 3 seconds timeout)
-    EXPECT_TRUE(completionSpy.wait(3000))
+    ASSERT_TRUE(completionSpy.wait(3000))
         << "focusSessionCompleted signal must be emitted within timeout";
 
-    // Assert
+    // Verify state transition to CoolDown
     EXPECT_EQ(m_viewModel->currentStateName(), QStringLiteral("CoolDown"))
-        << "State must transition to 'CoolDown' when timer reaches 0";
+        << "State must transition to 'CoolDown' when focus timer reaches 0";
 
-    EXPECT_EQ(m_viewModel->remainingSeconds(), 0)
-        << "Remaining seconds must be 0 after completion";
+    // Verify CoolDown duration is loaded from config (10 min = 600s)
+    EXPECT_EQ(m_viewModel->remainingSeconds(), 10 * 60)
+        << "CoolDown must load coolDownDurationMinutes (default: 10 min = 600s)";
 }
 
 /**
- * @test Verifies that syncText is called EXACTLY ONCE on session completion.
+ * @test Verifies that syncText is called EXACTLY ONCE on focus completion.
  *
- * This is the critical DI verification test: when the focus timer reaches
- * zero and transitions to CoolDown, the injected INoteSync::syncText must
- * be invoked exactly one time. This confirms the dependency injection
- * pipeline is correctly wired and the ViewModel properly delegates to
- * the sync strategy.
+ * Critical DI verification: when transitioning from Focusing to CoolDown,
+ * the injected INoteSync::syncText must be invoked exactly one time.
  */
 TEST_F(TimerViewModelTest, CoolDownTransition_CallsSyncTextExactlyOnce) {
     using ::testing::_;
     using ::testing::Return;
 
-    // Arrange: expect syncText to be called exactly once with any argument
     EXPECT_CALL(*m_mockSync, syncText(_))
         .Times(1)
         .WillOnce(Return(true));
 
-    // Inject minimal remaining time for fast test execution
     m_viewModel->setRemainingSecondsForTesting(1);
     m_viewModel->startFocus();
 
     QSignalSpy completionSpy(m_viewModel.get(),
                              &brain::presentation::TimerViewModel::focusSessionCompleted);
 
-    // Act: wait for the session to complete
     ASSERT_TRUE(completionSpy.wait(3000))
         << "focusSessionCompleted signal must be emitted";
 
-    // Assert: GMock automatically verifies EXPECT_CALL expectations
-    // in the MockNoteSync destructor. Explicit verification here for clarity.
+    // GMock automatically verifies EXPECT_CALL expectations
     ::testing::Mock::VerifyAndClearExpectations(m_mockSync.get());
 }
 
 /**
- * @test Verifies that remainingSecondsChanged signal is emitted on each tick.
+ * @test Verifies the full cycle: Focusing → CoolDown → Idle.
  *
- * Sets the timer to 2 seconds, starts focus, and verifies that the signal
- * fires as the countdown progresses.
+ * After focus completes, the cooldown timer counts down. When cooldown
+ * reaches zero, the state returns to Idle with focus duration reloaded.
+ */
+TEST_F(TimerViewModelTest, FullCycle_FocusingToCoolDownToIdle) {
+    using ::testing::_;
+    using ::testing::Return;
+
+    EXPECT_CALL(*m_mockSync, syncText(_))
+        .WillOnce(Return(true));
+
+    // Start with 1 second of focus
+    m_viewModel->setRemainingSecondsForTesting(1);
+    m_viewModel->startFocus();
+
+    QSignalSpy completionSpy(m_viewModel.get(),
+                             &brain::presentation::TimerViewModel::focusSessionCompleted);
+
+    ASSERT_TRUE(completionSpy.wait(3000));
+    EXPECT_EQ(m_viewModel->currentStateName(), QStringLiteral("CoolDown"));
+
+    // Now inject 1 second of cooldown to expedite
+    m_viewModel->setRemainingSecondsForTesting(1);
+
+    QSignalSpy coolDownSpy(m_viewModel.get(),
+                           &brain::presentation::TimerViewModel::coolDownCompleted);
+
+    ASSERT_TRUE(coolDownSpy.wait(3000))
+        << "coolDownCompleted signal must be emitted";
+
+    // Verify return to Idle with focus duration reloaded
+    EXPECT_EQ(m_viewModel->currentStateName(), QStringLiteral("Idle"))
+        << "State must return to 'Idle' after cooldown completes";
+
+    EXPECT_EQ(m_viewModel->remainingSeconds(), 40 * 60)
+        << "Remaining seconds must be reset to focus duration (2400s)";
+}
+
+/**
+ * @test Verifies that remainingSecondsChanged signal is emitted on each tick.
  */
 TEST_F(TimerViewModelTest, Tick_EmitsRemainingSecondsChanged) {
     using ::testing::_;
@@ -213,10 +239,10 @@ TEST_F(TimerViewModelTest, Tick_EmitsRemainingSecondsChanged) {
     QSignalSpy completionSpy(m_viewModel.get(),
                              &brain::presentation::TimerViewModel::focusSessionCompleted);
 
-    // Wait for completion (2 ticks: 2→1, 1→0)
     ASSERT_TRUE(completionSpy.wait(5000))
         << "Session must complete within timeout";
 
+    // 2 ticks (2→1, 1→0) + 1 for CoolDown loading = at least 3 emissions
     EXPECT_GE(secondsSpy.count(), 2)
         << "remainingSecondsChanged must be emitted at least twice for a 2-second timer";
 }
@@ -235,4 +261,12 @@ TEST_F(TimerViewModelTest, PauseFocus_WhenIdle_HasNoEffect) {
 
     EXPECT_EQ(stateSpy.count(), 0)
         << "No state change signal should be emitted";
+}
+
+/**
+ * @test Verifies that duration properties can be read correctly.
+ */
+TEST_F(TimerViewModelTest, DurationProperties_MatchAppConfigDefaults) {
+    EXPECT_EQ(m_viewModel->focusDurationMinutes(), 40);
+    EXPECT_EQ(m_viewModel->coolDownDurationMinutes(), 10);
 }

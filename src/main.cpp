@@ -8,10 +8,12 @@
  * infrastructure layer are referenced directly.
  *
  * @par Composition Root Pattern
- * 1. Create concrete infrastructure implementations.
- * 2. Inject them into presentation-layer ViewModels.
- * 3. Register ViewModels with the QML engine.
- * 4. Load the QML entry point.
+ * 1. Initialize the Qt application with identity metadata.
+ * 2. Load persistent configuration via AppConfig singleton.
+ * 3. Create concrete infrastructure implementations.
+ * 4. Inject them into presentation-layer ViewModels.
+ * 5. Register ViewModels with the QML engine.
+ * 6. Load the QML entry point.
  *
  * @author Brain Maintenance Dashboard Team
  * @date 2026
@@ -31,8 +33,9 @@
 /**
  * @brief Application entry point.
  *
- * Initializes the Qt application, wires all dependencies following
- * Clean Architecture, and starts the QML event loop.
+ * Initializes the Qt application, loads persistent configuration,
+ * wires all dependencies following Clean Architecture, and starts
+ * the QML event loop.
  *
  * @param argc Argument count.
  * @param argv Argument vector.
@@ -42,13 +45,16 @@ auto main(int argc, char* argv[]) -> int {
     // ---- Qt Application Setup ----
     QGuiApplication app{argc, argv};
     QGuiApplication::setApplicationName("Brain Maintenance Dashboard");
-    QGuiApplication::setApplicationVersion("0.1.0");
+    QGuiApplication::setApplicationVersion("0.3.0");
     QGuiApplication::setOrganizationName("BrainMaintenance");
 
-    // ---- Configuration ----
+    // ---- Configuration (loads from config.json or uses defaults) ----
     auto& config = brain::infrastructure::AppConfig::instance();
-    // Default vault path can be overridden via settings or CLI in future phases
-    config.setObsidianVaultPath("/tmp/obsidian-vault");
+
+    // Set a default vault path only if not yet configured
+    if (config.obsidianVaultPath().empty()) {
+        config.setObsidianVaultPath("/tmp/obsidian-vault");
+    }
 
     // ---- Dependency Wiring (Composition Root) ----
 

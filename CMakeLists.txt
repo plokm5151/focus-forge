@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(BrainMaintenanceDashboard
-    VERSION 0.2.0
+    VERSION 0.3.0
     DESCRIPTION "A cross-platform focus and brain maintenance dashboard"
     LANGUAGES CXX
 )
@@ -20,7 +20,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick ShaderTools)
 
 # ---- Strict Compiler Warnings ----
 add_library(project_warnings INTERFACE)
@@ -29,7 +29,7 @@ if(MSVC)
     target_compile_options(project_warnings INTERFACE
         /W4
         /permissive-
-        /WX-           # Treat warnings as errors (disabled for Phase 2)
+        /WX-
     )
 else()
     target_compile_options(project_warnings INTERFACE
@@ -48,7 +48,6 @@ endif()
 
 # ---- Release Optimization Flags ----
 if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    # Link Time Optimization (LTO)
     include(CheckIPOSupported)
     check_ipo_supported(RESULT ipo_supported OUTPUT ipo_error)
     if(ipo_supported)
@@ -79,12 +78,15 @@ set(PRESENTATION_SOURCES
 
 set(QML_RESOURCES
     qml/main.qml
+    qml/components/BreathingOrb.qml
 )
 
 # ============================================================================
 # Production Executable Target
 # ============================================================================
-qt_add_executable(${PROJECT_NAME}
+set(APP_TARGET FocusForgeApp)
+
+qt_add_executable(${APP_TARGET}
     src/main.cpp
     ${DOMAIN_SOURCES}
     ${INFRASTRUCTURE_SOURCES}
@@ -92,7 +94,7 @@ qt_add_executable(${PROJECT_NAME}
 )
 
 # ---- Link Libraries ----
-target_link_libraries(${PROJECT_NAME} PRIVATE
+target_link_libraries(${APP_TARGET} PRIVATE
     project_warnings
     Qt6::Core
     Qt6::Gui
@@ -101,20 +103,30 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 )
 
 # ---- Include Directories ----
-target_include_directories(${PROJECT_NAME} PRIVATE
+target_include_directories(${APP_TARGET} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
 # ---- QML Module Registration ----
-qt_add_qml_module(${PROJECT_NAME}
+qt_add_qml_module(${APP_TARGET}
     URI BrainMaintenanceDashboard
     VERSION 1.0
     QML_FILES ${QML_RESOURCES}
     NO_RESOURCE_TARGET_PATH
 )
 
+# ---- Shader Compilation (Qt Shader Baker → .qsb) ----
+qt6_add_shaders(${APP_TARGET} "app_shaders"
+    BATCHABLE
+    PRECOMPILE
+    OPTIMIZED
+    PREFIX "/shaders"
+    FILES
+        shaders/breathing_orb.frag
+)
+
 # ---- Installation Rules ----
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${APP_TARGET}
     BUNDLE  DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -135,9 +147,8 @@ if(BUILD_TESTING)
         GIT_SHALLOW    TRUE
     )
 
-    # Prevent GTest from overriding the parent project's compiler/linker settings
+    # Prevent GTest from overriding parent project's compiler/linker settings
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    # Don't install GTest alongside our project
     set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 
     FetchContent_MakeAvailable(googletest)
@@ -149,6 +160,7 @@ if(BUILD_TESTING)
     add_executable(NeuroDashTests
         tests/TimerViewModelTests.cpp
         ${DOMAIN_SOURCES}
+        ${INFRASTRUCTURE_SOURCES}
         ${PRESENTATION_SOURCES}
     )
 
