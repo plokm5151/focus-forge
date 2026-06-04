@@ -68,6 +68,18 @@ void AudioController::toggleMute() {
     setMuted(!m_isMuted);
 }
 
+auto AudioController::volume() const noexcept -> float {
+    return m_volume;
+}
+
+void AudioController::setVolume(float volume) {
+    if (qFuzzyCompare(m_volume, volume)) return;
+    
+    m_volume = volume;
+    m_bgOutput->setVolume(m_volume);
+    emit volumeChanged(m_volume);
+}
+
 void AudioController::onTimerStateChanged(TimerState newState, TimerState oldState) {
     qDebug() << "Audio Transition - Old:" << static_cast<int>(oldState) << "New:" << static_cast<int>(newState);
     

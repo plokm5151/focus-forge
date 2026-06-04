@@ -65,13 +65,13 @@ public:
 
     /**
      * @brief Appends a task to FocusTasks.md in the vault.
-     * @param taskText The text of the task to append.
+     * @param task The task to append.
      */
-    void appendTodo(std::string_view taskText) override;
+    void appendTodo(const TaskItem& task) override;
     
     [[nodiscard]] auto readTasks() const -> std::vector<TaskItem> override;
     void updateTask(int index, bool isCompleted) override;
-    void updateTaskText(int index, std::string_view newText) override;
+    void updateTaskText(int index, const TaskItem& task) override;
     void deleteTask(int index) override;
 
 private:

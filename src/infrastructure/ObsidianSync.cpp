@@ -77,7 +77,21 @@ auto ObsidianSync::syncText(std::string_view text) -> bool {
     return true;
 }
 
-void ObsidianSync::appendTodo(std::string_view taskText) {
+static std::string formatTaskLine(const brain::domain::INoteSync::TaskItem& task) {
+    std::string line = task.isCompleted ? "- [x] " : "- [ ] ";
+    line += task.text;
+    
+    if (task.priority == 3) line += " 🔺";
+    else if (task.priority == 2) line += " 🔼";
+    else if (task.priority == 1) line += " 🔽";
+    
+    if (!task.dueDate.empty()) {
+        line += " 📅 " + task.dueDate;
+    }
+    return line;
+}
+
+void ObsidianSync::appendTodo(const TaskItem& task) {
     if (m_vaultPath.empty()) {
         std::cerr << "[ObsidianSync] Error: vault path is empty.\n";
         return;
@@ -97,7 +111,7 @@ void ObsidianSync::appendTodo(std::string_view taskText) {
         return;
     }
 
-    ofs << "- [ ] " << taskText << '\n';
+    ofs << formatTaskLine(task) << '\n';
     ofs.flush();
 }
 
@@ -111,13 +125,47 @@ auto ObsidianSync::readTasks() const -> std::vector<TaskItem> {
 
     std::string line;
     while (std::getline(ifs, line)) {
+        bool isCompleted = false;
+        std::string rawText;
         if (line.starts_with("- [ ] ")) {
-            tasks.push_back(TaskItem{line.substr(6), false});
-        } else if (line.starts_with("- [x] ")) {
-            tasks.push_back(TaskItem{line.substr(6), true});
-        } else if (line.starts_with("- [X] ")) {
-            tasks.push_back(TaskItem{line.substr(6), true});
+            rawText = line.substr(6);
+        } else if (line.starts_with("- [x] ") || line.starts_with("- [X] ")) {
+            rawText = line.substr(6);
+            isCompleted = true;
+        } else {
+            continue;
         }
+
+        TaskItem item;
+        item.isCompleted = isCompleted;
+        item.priority = 0; // Default
+
+        // Parse dueDate: 📅 YYYY-MM-DD
+        if (auto pos = rawText.find("📅 "); pos != std::string::npos) {
+            if (pos + 14 <= rawText.length()) { // "📅 " + 10 chars
+                item.dueDate = rawText.substr(pos + 5, 10);
+            }
+            rawText.erase(pos); // remove everything after and including 📅
+        }
+
+        // Parse priority
+        if (auto pos = rawText.find("🔺"); pos != std::string::npos) {
+            item.priority = 3;
+            rawText.erase(pos);
+        } else if (auto pos2 = rawText.find("🔼"); pos2 != std::string::npos) {
+            item.priority = 2;
+            rawText.erase(pos2);
+        } else if (auto pos3 = rawText.find("🔽"); pos3 != std::string::npos) {
+            item.priority = 1;
+            rawText.erase(pos3);
+        }
+
+        // Trim trailing whitespaces
+        while (!rawText.empty() && std::isspace(rawText.back())) {
+            rawText.pop_back();
+        }
+        item.text = rawText;
+        tasks.push_back(item);
     }
     return tasks;
 }
@@ -154,7 +202,7 @@ void ObsidianSync::updateTask(int index, bool isCompleted) {
     }
 }
 
-void ObsidianSync::updateTaskText(int index, std::string_view newText) {
+void ObsidianSync::updateTaskText(int index, const TaskItem& task) {
     if (m_vaultPath.empty() || index < 0) return;
 
     const fs::path taskFilePath = fs::path{m_vaultPath} / "FocusTasks.md";
@@ -168,7 +216,7 @@ void ObsidianSync::updateTaskText(int index, std::string_view newText) {
     while (std::getline(ifs, line)) {
         if (line.starts_with("- [ ] ") || line.starts_with("- [x] ") || line.starts_with("- [X] ")) {
             if (currentTaskIndex == index) {
-                line = line.substr(0, 6) + std::string(newText);
+                line = formatTaskLine(task);
             }
             currentTaskIndex++;
         }

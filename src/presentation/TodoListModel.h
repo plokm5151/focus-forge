@@ -16,12 +16,16 @@ class TodoListModel : public QAbstractListModel {
 public:
     enum Roles {
         DisplayRole = Qt::DisplayRole,
-        IsCompletedRole = Qt::UserRole + 1
+        IsCompletedRole = Qt::UserRole + 1,
+        DueDateRole = Qt::UserRole + 2,
+        PriorityRole = Qt::UserRole + 3
     };
 
     struct TodoItem {
         QString text;
         bool isCompleted;
+        QString dueDate;
+        int priority; // 3 = High, 2 = Normal, 1 = Low
     };
 
     explicit TodoListModel(std::shared_ptr<brain::infrastructure::ObsidianSync> sync, QObject* parent = nullptr);

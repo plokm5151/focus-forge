@@ -98,6 +98,47 @@ Rectangle {
                         Behavior on color { ColorAnimation { duration: 150 } }
                     }
 
+                    // Priority Badge
+                    Rectangle {
+                        visible: priority > 0
+                        width: priorityText.implicitWidth + 12
+                        height: 20
+                        radius: 10
+                        color: priority === 3 ? "#ef444433" : (priority === 2 ? "#f59e0b33" : "#3b82f633")
+                        border.width: 1
+                        border.color: priority === 3 ? "#ef444488" : (priority === 2 ? "#f59e0b88" : "#3b82f688")
+                        
+                        Text {
+                            id: priorityText
+                            anchors.centerIn: parent
+                            text: priority === 3 ? "High" : (priority === 2 ? "Med" : "Low")
+                            color: priority === 3 ? "#fca5a5" : (priority === 2 ? "#fcd34d" : "#93c5fd")
+                            font.pixelSize: 11
+                            font.weight: Font.DemiBold
+                            font.family: "Inter, Segoe UI, sans-serif"
+                        }
+                    }
+
+                    // Due Date Badge
+                    Rectangle {
+                        visible: dueDate !== ""
+                        width: dateText.implicitWidth + 16
+                        height: 20
+                        radius: 10
+                        color: "#ffffff1a"
+                        border.width: 1
+                        border.color: "#ffffff33"
+                        
+                        Text {
+                            id: dateText
+                            anchors.centerIn: parent
+                            text: "📅 " + dueDate
+                            color: "#d1d5db"
+                            font.pixelSize: 11
+                            font.family: "Inter, Segoe UI, sans-serif"
+                        }
+                    }
+
                     // Delete Button
                     Button {
                         id: delBtn

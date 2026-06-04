@@ -16,28 +16,49 @@ int TodoListModel::rowCount(const QModelIndex& parent) const {
 }
 
 QVariant TodoListModel::data(const QModelIndex& index, int role) const {
-    if (!index.isValid() || index.row() < 0 || static_cast<std::size_t>(index.row()) >= m_tasks.size()) return {};
+    if (!index.isValid() || index.row() < 0 || static_cast<std::size_t>(index.row()) >= m_tasks.size()) {
+        return QVariant{};
+    }
 
     const auto& item = m_tasks[static_cast<std::size_t>(index.row())];
-    if (role == DisplayRole) {
-        return item.text;
-    } else if (role == IsCompletedRole) {
-        return item.isCompleted;
+    switch (role) {
+        case DisplayRole: return item.text;
+        case IsCompletedRole: return item.isCompleted;
+        case DueDateRole: return item.dueDate;
+        case PriorityRole: return item.priority;
+        default: return QVariant{};
     }
-    return {};
 }
 
 QHash<int, QByteArray> TodoListModel::roleNames() const {
     QHash<int, QByteArray> roles;
     roles[DisplayRole] = "display";
     roles[IsCompletedRole] = "isCompleted";
+    roles[DueDateRole] = "dueDate";
+    roles[PriorityRole] = "priority";
     return roles;
+}
+
+void TodoListModel::loadTasks() {
+    beginResetModel();
+    m_tasks.clear();
+    
+    auto syncTasks = m_sync->readTasks();
+    for (const auto& st : syncTasks) {
+        m_tasks.push_back(TodoItem{
+            QString::fromStdString(st.text),
+            st.isCompleted,
+            QString::fromStdString(st.dueDate),
+            st.priority
+        });
+    }
+    endResetModel();
 }
 
 void TodoListModel::toggleTask(int index) {
     if (index < 0 || static_cast<std::size_t>(index) >= m_tasks.size()) return;
     
-    auto& task = m_tasks[index];
+    auto& task = m_tasks[static_cast<std::size_t>(index)];
     task.isCompleted = !task.isCompleted;
     
     m_sync->updateTask(index, task.isCompleted);
@@ -46,38 +67,30 @@ void TodoListModel::toggleTask(int index) {
 }
 
 void TodoListModel::updateTaskText(int index, const QString& newText) {
-    if (index < 0 || index >= static_cast<int>(m_tasks.size())) return;
-    if (newText.trimmed().isEmpty()) return;
-
-    auto& task = m_tasks[index];
-    if (task.text == newText) return;
-
+    if (index < 0 || static_cast<std::size_t>(index) >= m_tasks.size()) return;
+    
+    auto& task = m_tasks[static_cast<std::size_t>(index)];
     task.text = newText;
-    m_sync->updateTaskText(index, newText.toStdString());
-
+    
+    brain::domain::INoteSync::TaskItem syncTask;
+    syncTask.text = newText.toStdString();
+    syncTask.isCompleted = task.isCompleted;
+    syncTask.dueDate = task.dueDate.toStdString();
+    syncTask.priority = task.priority;
+    
+    m_sync->updateTaskText(index, syncTask);
+    
     emit dataChanged(createIndex(index, 0), createIndex(index, 0), {DisplayRole});
 }
 
 void TodoListModel::deleteTask(int index) {
-    if (index < 0 || index >= static_cast<int>(m_tasks.size())) return;
+    if (index < 0 || static_cast<std::size_t>(index) >= m_tasks.size()) return;
 
     beginRemoveRows(QModelIndex(), index, index);
     m_tasks.erase(m_tasks.begin() + index);
     endRemoveRows();
 
     m_sync->deleteTask(index);
-}
-
-void TodoListModel::loadTasks() {
-    beginResetModel();
-    m_tasks.clear();
-    if (m_sync) {
-        auto parsedTasks = m_sync->readTasks();
-        for (const auto& pt : parsedTasks) {
-            m_tasks.push_back({QString::fromStdString(pt.text), pt.isCompleted});
-        }
-    }
-    endResetModel();
 }
 
 } // namespace brain::presentation

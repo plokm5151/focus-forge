@@ -162,6 +162,11 @@ public:
      */
     Q_INVOKABLE void submitTodo(const QString& text);
 
+    /**
+     * @brief Submits a new task with metadata to the note sync strategy.
+     */
+    Q_INVOKABLE void submitTodoWithMetadata(const QString& text, int priority, const QString& dueDate);
+
     // --- Test Support ---
 
     /**

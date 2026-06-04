@@ -164,10 +164,26 @@ void TimerViewModel::stopFocus() {
 }
 
 void TimerViewModel::submitTodo(const QString& text) {
-    if (text.trimmed().isEmpty()) {
-        return;
-    }
-    m_noteSync->appendTodo(text.toStdString());
+    if (text.trimmed().isEmpty()) return;
+    
+    brain::domain::INoteSync::TaskItem task;
+    task.text = text.toStdString();
+    task.isCompleted = false;
+    task.priority = 0;
+    
+    m_noteSync->appendTodo(task);
+}
+
+void TimerViewModel::submitTodoWithMetadata(const QString& text, int priority, const QString& dueDate) {
+    if (text.trimmed().isEmpty()) return;
+    
+    brain::domain::INoteSync::TaskItem task;
+    task.text = text.toStdString();
+    task.isCompleted = false;
+    task.priority = priority;
+    task.dueDate = dueDate.toStdString();
+    
+    m_noteSync->appendTodo(task);
 }
 
 // ---------------------------------------------------------------------------

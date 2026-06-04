@@ -80,6 +80,46 @@ ApplicationWindow {
                     audioController.toggleMute()
                 }
             }
+            
+            // Volume Slider
+            Slider {
+                id: volumeSlider
+                Layout.preferredWidth: 80
+                from: 0.0
+                to: 1.0
+                value: audioController.volume
+                onValueChanged: {
+                    if (pressed) {
+                        audioController.volume = value;
+                    }
+                }
+                
+                background: Rectangle {
+                    x: volumeSlider.leftPadding
+                    y: volumeSlider.topPadding + volumeSlider.availableHeight / 2 - height / 2
+                    width: volumeSlider.availableWidth
+                    height: 4
+                    radius: 2
+                    color: "#ffffff33"
+                    
+                    Rectangle {
+                        width: volumeSlider.visualPosition * parent.width
+                        height: parent.height
+                        color: "#ffffff"
+                        radius: 2
+                    }
+                }
+                
+                handle: Rectangle {
+                    x: volumeSlider.leftPadding + volumeSlider.visualPosition * (volumeSlider.availableWidth - width)
+                    y: volumeSlider.topPadding + volumeSlider.availableHeight / 2 - height / 2
+                    width: 12
+                    height: 12
+                    radius: 6
+                    color: "#ffffff"
+                    border.color: "#333333"
+                }
+            }
 
             // Todo List Toggle
             Button {

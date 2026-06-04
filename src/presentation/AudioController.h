@@ -38,6 +38,7 @@ class AudioController : public QObject {
      * @brief Indicates whether all audio output is muted.
      */
     Q_PROPERTY(bool isMuted READ isMuted WRITE setMuted NOTIFY isMutedChanged)
+    Q_PROPERTY(float volume READ volume WRITE setVolume NOTIFY volumeChanged)
 
 public:
     /**
@@ -51,6 +52,9 @@ public:
     [[nodiscard]] auto isMuted() const noexcept -> bool;
     void setMuted(bool muted);
     
+    [[nodiscard]] auto volume() const noexcept -> float;
+    void setVolume(float volume);
+
     Q_INVOKABLE void toggleMute();
 
 public slots:
@@ -62,14 +66,18 @@ public slots:
     void onTimerStateChanged(brain::domain::TimerState newState, brain::domain::TimerState oldState);
 
 signals:
-    void isMutedChanged(bool muted);
+    void isMutedChanged(bool isMuted);
+    void volumeChanged(float volume);
 
 private:
-    QMediaPlayer* m_bgPlayer;    ///< Plays background loop audio.
-    QAudioOutput* m_bgOutput;    ///< Audio output for the media player.
-    QMediaPlayer* m_bellPlayer;  ///< Plays the transition bell using QMediaPlayer.
-    QAudioOutput* m_bellOutput;  ///< Audio output for the bell player.
+    QMediaPlayer* m_bgPlayer;
+    QAudioOutput* m_bgOutput;
+    
+    QMediaPlayer* m_bellPlayer;
+    QAudioOutput* m_bellOutput;
+
     bool m_isMuted{false};       ///< Tracks the mute state.
+    float m_volume{0.5f};        ///< Tracks the background volume level.
 };
 
 } // namespace brain::presentation

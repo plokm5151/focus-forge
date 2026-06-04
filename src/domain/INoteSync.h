@@ -66,16 +66,18 @@ public:
      */
     [[nodiscard]] virtual auto syncText(std::string_view text) -> bool = 0;
 
-    /**
-     * @brief Appends a quick capture task to a predefined Obsidian note.
-     * @param taskText The text of the task to append.
-     */
-    virtual void appendTodo(std::string_view taskText) = 0;
-
     struct TaskItem {
         std::string text;
         bool isCompleted;
+        std::string dueDate;
+        int priority; // 3 = High, 2 = Normal, 1 = Low
     };
+
+    /**
+     * @brief Appends a quick capture task to a predefined Obsidian note.
+     * @param task The task object to append.
+     */
+    virtual void appendTodo(const TaskItem& task) = 0;
 
     /**
      * @brief Reads tasks from the sync target.
@@ -93,11 +95,11 @@ public:
     virtual void updateTask(int index, bool isCompleted) = 0;
 
     /**
-     * @brief Updates the text of an existing task.
+     * @brief Updates the text and metadata of an existing task.
      * @param index The zero-based index of the task.
-     * @param newText The new text for the task.
+     * @param task The task containing the new text and metadata.
      */
-    virtual void updateTaskText(int index, std::string_view newText) = 0;
+    virtual void updateTaskText(int index, const TaskItem& task) = 0;
 
     /**
      * @brief Deletes a task.
