@@ -17,8 +17,10 @@ macdeployqt build_release/bin/FocusForgeApp.app -qmldir=qml -verbose=1
 
 echo "==> Fixing macdeployqt bug: manually bundling QtDBus..."
 mkdir -p build_release/bin/FocusForgeApp.app/Contents/Frameworks/QtDBus.framework/Versions/A
-cp /opt/homebrew/lib/QtDBus.framework/Versions/A/QtDBus build_release/bin/FocusForgeApp.app/Contents/Frameworks/QtDBus.framework/Versions/A/
-cp -R /opt/homebrew/lib/QtDBus.framework/Versions/A/Resources build_release/bin/FocusForgeApp.app/Contents/Frameworks/QtDBus.framework/Versions/A/ || true
+cp -f /opt/homebrew/lib/QtDBus.framework/Versions/A/QtDBus build_release/bin/FocusForgeApp.app/Contents/Frameworks/QtDBus.framework/Versions/A/
+chmod u+w build_release/bin/FocusForgeApp.app/Contents/Frameworks/QtDBus.framework/Versions/A/QtDBus
+cp -Rf /opt/homebrew/lib/QtDBus.framework/Versions/A/Resources build_release/bin/FocusForgeApp.app/Contents/Frameworks/QtDBus.framework/Versions/A/ || true
+chmod -R u+w build_release/bin/FocusForgeApp.app/Contents/Frameworks/QtDBus.framework/Versions/A/Resources || true
 ln -sf A build_release/bin/FocusForgeApp.app/Contents/Frameworks/QtDBus.framework/Versions/Current
 ln -sf Versions/Current/QtDBus build_release/bin/FocusForgeApp.app/Contents/Frameworks/QtDBus.framework/QtDBus
 ln -sf Versions/Current/Resources build_release/bin/FocusForgeApp.app/Contents/Frameworks/QtDBus.framework/Resources
