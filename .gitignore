@@ -1,0 +1,123 @@
+# ============================================================================
+# Brain Maintenance Dashboard - .gitignore
+# Tailored for C++20, CMake, and Qt6
+# ============================================================================
+
+# --- Build Directories ---
+build/
+cmake-build-*/
+out/
+bin/
+lib/
+
+# --- CMake Cache & Generated Files ---
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+CMakeUserPresets.json
+compile_commands.json
+install_manifest.txt
+CTestTestfile.cmake
+_deps/
+
+# --- Compiler & Linker Output ---
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.out
+*.app
+*.pdb
+*.ilk
+*.exp
+
+# --- Qt Generated Files ---
+moc_*.cpp
+moc_*.h
+ui_*.h
+qrc_*.cpp
+*.qmlc
+*.jsc
+.qmake.cache
+.qmake.stash
+*.pro.user
+*.pro.user.*
+*.autosave
+
+# --- IDE & Editor Files ---
+# Visual Studio
+.vs/
+*.vcxproj
+*.vcxproj.*
+*.sln
+*.suo
+*.user
+*.ncb
+*.sdf
+*.opensdf
+
+# VS Code
+.vscode/
+
+# CLion / JetBrains
+.idea/
+*.iml
+
+# Qt Creator
+*.creator
+*.creator.user
+*.files
+*.includes
+*.config
+*.cflags
+*.cxxflags
+
+# Xcode
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+DerivedData/
+
+# --- OS-Specific Hidden Files ---
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+.directory
+
+# --- Package Managers ---
+vcpkg_installed/
+conan/
+conanbuildinfo.*
+conaninfo.txt
+graph_info.json
+
+# --- Testing & Coverage ---
+Testing/
+*.gcda
+*.gcno
+*.gcov
+coverage/
+coverage.info
+
+# --- Documentation ---
+docs/generated/
+docs/html/
+docs/latex/
