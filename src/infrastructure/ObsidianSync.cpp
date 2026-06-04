@@ -77,4 +77,28 @@ auto ObsidianSync::syncText(std::string_view text) -> bool {
     return true;
 }
 
+void ObsidianSync::appendTodo(std::string_view taskText) {
+    if (m_vaultPath.empty()) {
+        std::cerr << "[ObsidianSync] Error: vault path is empty.\n";
+        return;
+    }
+
+    const fs::path vaultDir{m_vaultPath};
+    if (!fs::exists(vaultDir) || !fs::is_directory(vaultDir)) {
+        std::cerr << "[ObsidianSync] Error: vault path does not exist or is not a directory: " << m_vaultPath << '\n';
+        return;
+    }
+
+    const fs::path taskFilePath = vaultDir / "FocusTasks.md";
+
+    std::ofstream ofs{taskFilePath, std::ios::app};
+    if (!ofs.is_open()) {
+        std::cerr << "[ObsidianSync] Error: failed to open task file: " << taskFilePath << '\n';
+        return;
+    }
+
+    ofs << "- [ ] " << taskText << '\n';
+    ofs.flush();
+}
+
 } // namespace brain::infrastructure

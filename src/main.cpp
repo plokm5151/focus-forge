@@ -27,6 +27,9 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QDir>
+#include <QDirIterator>
+#include <QDebug>
 
 #include <iostream>
 #include <memory>
@@ -54,7 +57,7 @@ auto main(int argc, char* argv[]) -> int {
 
     // Set a default vault path only if not yet configured
     if (config.obsidianVaultPath().empty()) {
-        config.setObsidianVaultPath("/tmp/obsidian-vault");
+        config.setObsidianVaultPath(QDir::homePath().toStdString() + "/Documents/Obsidian/");
     }
 
     // ---- Dependency Wiring (Composition Root) ----
@@ -81,9 +84,6 @@ auto main(int argc, char* argv[]) -> int {
     engine.rootContext()->setContextProperty(
         "timerViewModel", timerViewModel.get());
 
-    // 4. Load the QML entry point
-    const QUrl mainQmlUrl{QStringLiteral("qrc:/BrainMaintenanceDashboard/qml/main.qml")};
-
     // Handle QML loading errors gracefully
     QObject::connect(
         &engine,
@@ -95,7 +95,16 @@ auto main(int argc, char* argv[]) -> int {
         },
         Qt::QueuedConnection);
 
-    engine.load(mainQmlUrl);
+    // 4. Debug: Print QRC Tree
+    QDirIterator it(":", QDirIterator::Subdirectories);
+    qDebug() << "--- QRC Resource Tree ---";
+    while (it.hasNext()) {
+        qDebug() << it.next();
+    }
+    qDebug() << "-------------------------";
+
+    // 5. Load the QML entry point via Qt6 module mechanism
+    engine.loadFromModule("FocusForgeApp", "Main");
 
     if (engine.rootObjects().isEmpty()) {
         std::cerr << "[main] Fatal: No root QML objects loaded.\n";

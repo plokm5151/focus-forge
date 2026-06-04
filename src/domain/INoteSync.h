@@ -64,6 +64,12 @@ public:
      */
     [[nodiscard]] virtual auto syncText(std::string_view text) -> bool = 0;
 
+    /**
+     * @brief Appends a quick capture task to a predefined Obsidian note.
+     * @param taskText The text of the task to append.
+     */
+    virtual void appendTodo(std::string_view taskText) = 0;
+
     // --- Deleted copy/move to prevent slicing ---
     INoteSync(const INoteSync&) = delete;
     INoteSync& operator=(const INoteSync&) = delete;

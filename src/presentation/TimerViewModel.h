@@ -151,6 +151,12 @@ public:
      */
     Q_INVOKABLE void pauseFocus();
 
+    /**
+     * @brief Submits a new task to the note sync strategy.
+     * @param text The task description.
+     */
+    Q_INVOKABLE void submitTodo(const QString& text);
+
     // --- Test Support ---
 
     /**

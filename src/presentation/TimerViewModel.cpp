@@ -145,6 +145,13 @@ void TimerViewModel::pauseFocus() {
     m_tickTimer->stop();
 }
 
+void TimerViewModel::submitTodo(const QString& text) {
+    if (text.trimmed().isEmpty()) {
+        return;
+    }
+    m_noteSync->appendTodo(text.toStdString());
+}
+
 // ---------------------------------------------------------------------------
 // Test Support
 // ---------------------------------------------------------------------------

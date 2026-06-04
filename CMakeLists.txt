@@ -21,6 +21,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick ShaderTools Multimedia)
+qt_policy(SET QTP0001 NEW)
 
 # ---- Strict Compiler Warnings ----
 add_library(project_warnings INTERFACE)
@@ -58,6 +59,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebI
     endif()
 endif()
 
+# ---- Output Directories ----
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 # ---- Source Files (Clean Architecture Layers) ----
 set(DOMAIN_SOURCES
     src/domain/INoteSync.h
@@ -79,8 +83,9 @@ set(PRESENTATION_SOURCES
 )
 
 set(QML_RESOURCES
-    qml/main.qml
+    qml/Main.qml
     qml/components/BreathingOrb.qml
+    qml/components/QuickCapturePopup.qml
 )
 
 # ============================================================================
@@ -119,10 +124,9 @@ target_include_directories(${APP_TARGET} PRIVATE
 
 # ---- QML Module Registration ----
 qt_add_qml_module(${APP_TARGET}
-    URI BrainMaintenanceDashboard
+    URI FocusForgeApp
     VERSION 1.0
     QML_FILES ${QML_RESOURCES}
-    NO_RESOURCE_TARGET_PATH
 )
 
 # ---- Shader Compilation (Qt Shader Baker → .qsb) ----

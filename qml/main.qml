@@ -197,4 +197,19 @@ ApplicationWindow {
             color: "#444466"
         }
     }
+
+    // ── Quick Capture Shortcut & Popup ──
+    Shortcut {
+        sequence: StandardKey.AddTab // Often maps to Ctrl+T / Cmd+T
+        onActivated: quickCapturePopup.open()
+    }
+
+    Shortcut {
+        sequence: "Ctrl+T"
+        onActivated: quickCapturePopup.open()
+    }
+
+    QuickCapturePopup {
+        id: quickCapturePopup
+    }
 }

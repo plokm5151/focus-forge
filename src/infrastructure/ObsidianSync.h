@@ -63,6 +63,12 @@ public:
      */
     [[nodiscard]] auto syncText(std::string_view text) -> bool override;
 
+    /**
+     * @brief Appends a task to FocusTasks.md in the vault.
+     * @param taskText The text of the task to append.
+     */
+    void appendTodo(std::string_view taskText) override;
+
 private:
     std::string m_vaultPath;     ///< Absolute path to the Obsidian vault.
     std::string m_logFileName;   ///< Name of the focus session log file.

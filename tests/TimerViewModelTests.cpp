@@ -40,6 +40,7 @@ public:
     ~MockNoteSync() override = default;
 
     MOCK_METHOD(bool, syncText, (std::string_view text), (override));
+    MOCK_METHOD(void, appendTodo, (std::string_view taskText), (override));
 };
 
 // ===========================================================================
@@ -269,4 +270,17 @@ TEST_F(TimerViewModelTest, PauseFocus_WhenIdle_HasNoEffect) {
 TEST_F(TimerViewModelTest, DurationProperties_MatchAppConfigDefaults) {
     EXPECT_EQ(m_viewModel->focusDurationMinutes(), 40);
     EXPECT_EQ(m_viewModel->coolDownDurationMinutes(), 10);
+}
+
+/**
+ * @test Verifies that submitTodo routes correctly to the injected INoteSync.
+ */
+TEST_F(TimerViewModelTest, SubmitTodo_CallsAppendTodo) {
+    using ::testing::_;
+    using ::testing::Eq;
+
+    EXPECT_CALL(*m_mockSync, appendTodo(Eq("Test task")))
+        .Times(1);
+
+    m_viewModel->submitTodo("Test task");
 }
