@@ -3,14 +3,12 @@ import sys
 import os
 
 try:
-    from PIL import Image
+    from PIL import Image, ImageDraw
 except ImportError:
     print("Pillow not installed. Please run: pip install pillow")
     sys.exit(1)
 
-from collections import deque
-
-def flood_fill_transparent(image_path, output_path):
+def apply_mask(image_path, output_path):
     print(f"Loading {image_path}...")
     try:
         img = Image.open(image_path).convert("RGBA")
@@ -28,40 +26,16 @@ def flood_fill_transparent(image_path, output_path):
     print(f"Cropping center {crop_size}x{crop_size} from {orig_w}x{orig_h}...")
     img = img.crop((left, top, right, bottom))
 
-    width, height = img.size
-    pixels = img.load()
-
-    # We will do a BFS flood fill from the 4 corners
-    corners = [(0, 0), (width - 1, 0), (0, height - 1), (width - 1, height - 1)]
-    visited = set()
-    queue = deque()
-
-    # Tolerance for "near black"
-    def is_near_black(r, g, b):
-        return r < 15 and g < 15 and b < 15
-
-    for cx, cy in corners:
-        r, g, b, a = pixels[cx, cy]
-        if is_near_black(r, g, b):
-            queue.append((cx, cy))
-            visited.add((cx, cy))
-
-    print("Running flood fill algorithm...")
-    # BFS
-    while queue:
-        x, y = queue.popleft()
-        # Set pixel to completely transparent
-        pixels[x, y] = (0, 0, 0, 0)
-        
-        # Check neighbors
-        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            nx, ny = x + dx, y + dy
-            if 0 <= nx < width and 0 <= ny < height:
-                if (nx, ny) not in visited:
-                    visited.add((nx, ny))
-                    nr, ng, nb, na = pixels[nx, ny]
-                    if is_near_black(nr, ng, nb):
-                        queue.append((nx, ny))
+    # Apply a rounded rectangle mask to remove the black corners
+    print("Applying rounded square mask...")
+    mask = Image.new("L", img.size, 0)
+    draw = ImageDraw.Draw(mask)
+    
+    # We use a radius that's approximately standard for squircles
+    radius = int(crop_size * 0.22)
+    draw.rounded_rectangle((0, 0, crop_size, crop_size), radius=radius, fill=255)
+    
+    img.putalpha(mask)
 
     print("Resizing to 820x820...")
     img_820 = img.resize((820, 820), Image.Resampling.LANCZOS)
@@ -80,4 +54,5 @@ if __name__ == "__main__":
     dst = os.path.join(os.path.dirname(__file__), "..", "assets", "images", "padded_icon.png")
     dst = os.path.abspath(dst)
     
-    flood_fill_transparent(src, dst)
+    apply_mask(src, dst)
+
