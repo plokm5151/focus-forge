@@ -42,6 +42,13 @@ AudioController::AudioController(QObject* parent)
     // Default volume (can be configured via AppConfig in the future)
     m_bgOutput->setVolume(0.5f);
     m_bellOutput->setVolume(1.0f);
+
+    connect(m_bellPlayer, &QMediaPlayer::errorOccurred, this, [](QMediaPlayer::Error error, const QString &errorString) {
+        qDebug() << "Bell Player Error:" << error << errorString;
+    });
+    connect(m_bgPlayer, &QMediaPlayer::errorOccurred, this, [](QMediaPlayer::Error error, const QString &errorString) {
+        qDebug() << "BG Player Error:" << error << errorString;
+    });
 }
 
 void AudioController::onTimerStateChanged(TimerState newState, TimerState oldState) {
@@ -63,7 +70,7 @@ void AudioController::onTimerStateChanged(TimerState newState, TimerState oldSta
 #endif
 
     if (newState == TimerState::Focusing) {
-        m_bgPlayer->setSource(QUrl::fromLocalFile(audioDir + "focus.ogg"));
+        m_bgPlayer->setSource(QUrl::fromLocalFile(audioDir + "focus.mp3"));
         m_bgPlayer->play();
     } else if (newState == TimerState::CoolDown) {
         m_bgPlayer->setSource(QUrl::fromLocalFile(audioDir + "cooldown.mp3"));
