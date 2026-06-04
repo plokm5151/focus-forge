@@ -15,5 +15,8 @@ echo "==> Running macdeployqt to bundle dependencies..."
 # The app is located inside build_release/bin due to CMAKE_RUNTIME_OUTPUT_DIRECTORY
 macdeployqt build_release/bin/FocusForgeApp.app -qmldir=qml -verbose=1
 
+echo "==> Stripping Homebrew RPATH to prevent dyld conflicts..."
+install_name_tool -delete_rpath /opt/homebrew/lib build_release/bin/FocusForgeApp.app/Contents/MacOS/FocusForgeApp || true
+
 echo "==> Deployment complete!"
 echo "You can now distribute build_release/bin/FocusForgeApp.app"
