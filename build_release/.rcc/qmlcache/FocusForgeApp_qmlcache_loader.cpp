@@ -26,6 +26,13 @@ namespace _qt_qml_FocusForgeApp_qml_components_QuickCapturePopup_qml {
         reinterpret_cast<const QV4::CompiledData::Unit*>(&qmlData), &aotBuiltFunctions[0], nullptr
     };
 }
+namespace _qt_qml_FocusForgeApp_qml_components_TodoListPanel_qml { 
+    extern const unsigned char qmlData[];
+    extern const QQmlPrivate::AOTCompiledFunction aotBuiltFunctions[];
+    const QQmlPrivate::CachedQmlUnit unit = {
+        reinterpret_cast<const QV4::CompiledData::Unit*>(&qmlData), &aotBuiltFunctions[0], nullptr
+    };
+}
 
 }
 namespace {
@@ -43,6 +50,7 @@ Registry::Registry() {
     resourcePathToCachedUnit.insert(QStringLiteral("/qt/qml/FocusForgeApp/qml/Main.qml"), &QmlCacheGeneratedCode::_qt_qml_FocusForgeApp_qml_Main_qml::unit);
     resourcePathToCachedUnit.insert(QStringLiteral("/qt/qml/FocusForgeApp/qml/components/BreathingOrb.qml"), &QmlCacheGeneratedCode::_qt_qml_FocusForgeApp_qml_components_BreathingOrb_qml::unit);
     resourcePathToCachedUnit.insert(QStringLiteral("/qt/qml/FocusForgeApp/qml/components/QuickCapturePopup.qml"), &QmlCacheGeneratedCode::_qt_qml_FocusForgeApp_qml_components_QuickCapturePopup_qml::unit);
+    resourcePathToCachedUnit.insert(QStringLiteral("/qt/qml/FocusForgeApp/qml/components/TodoListPanel.qml"), &QmlCacheGeneratedCode::_qt_qml_FocusForgeApp_qml_components_TodoListPanel_qml::unit);
     QQmlPrivate::RegisterQmlUnitCacheHook registration;
     registration.structVersion = 0;
     registration.lookupCachedQmlUnit = &lookupCachedUnit;

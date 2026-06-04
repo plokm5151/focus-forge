@@ -224,5 +224,37 @@
         ],
         "inputFile": "TimerViewModel.h",
         "outputRevision": 69
+    },
+    {
+        "classes": [
+            {
+                "className": "TodoListModel",
+                "lineNumber": 14,
+                "methods": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "index",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 0,
+                        "name": "toggleTask",
+                        "returnType": "void"
+                    }
+                ],
+                "object": true,
+                "qualifiedClassName": "brain::presentation::TodoListModel",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QAbstractListModel"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "TodoListModel.h",
+        "outputRevision": 69
     }
 ]

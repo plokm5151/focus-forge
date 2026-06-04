@@ -3,6 +3,7 @@
     <file alias="qml/Main.qml">/Users/plokm/Downloads/focus-forge/qml/Main.qml</file>
     <file alias="qml/components/BreathingOrb.qml">/Users/plokm/Downloads/focus-forge/qml/components/BreathingOrb.qml</file>
     <file alias="qml/components/QuickCapturePopup.qml">/Users/plokm/Downloads/focus-forge/qml/components/QuickCapturePopup.qml</file>
+    <file alias="qml/components/TodoListPanel.qml">/Users/plokm/Downloads/focus-forge/qml/components/TodoListPanel.qml</file>
   </qresource>
 </RCC>
 

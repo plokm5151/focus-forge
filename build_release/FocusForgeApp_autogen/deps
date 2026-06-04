@@ -759,6 +759,7 @@ FocusForgeApp_autogen/timestamp: \
 	/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/optional \
 	/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/ostream \
 	/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/ratio \
+	/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/set \
 	/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/sstream \
 	/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/stdbool.h \
 	/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/stddef.h \
@@ -775,6 +776,7 @@ FocusForgeApp_autogen/timestamp: \
 	/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/type_traits \
 	/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/typeinfo \
 	/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/unordered_map \
+	/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/unordered_set \
 	/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/utility \
 	/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/variant \
 	/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/vector \
@@ -880,14 +882,21 @@ FocusForgeApp_autogen/timestamp: \
 	/Users/plokm/Downloads/focus-forge/src/presentation/AudioController.h \
 	/Users/plokm/Downloads/focus-forge/src/presentation/TimerViewModel.cpp \
 	/Users/plokm/Downloads/focus-forge/src/presentation/TimerViewModel.h \
+	/Users/plokm/Downloads/focus-forge/src/presentation/TodoListModel.cpp \
+	/Users/plokm/Downloads/focus-forge/src/presentation/TodoListModel.h \
+	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/QAbstractListModel \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/QObject \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/QString \
+	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/QStringList \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/QTimer \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/q17memory.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/q20functional.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/q20memory.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/q20type_traits.h \
+	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/q20utility.h \
+	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/q23utility.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qabstracteventdispatcher.h \
+	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qabstractitemmodel.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qalgorithms.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qanystringview.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qarraydata.h \
@@ -913,9 +922,11 @@ FocusForgeApp_autogen/timestamp: \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qcontainerfwd.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qcontainerinfo.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qcontainertools_impl.h \
+	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qcontiguouscache.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qdarwinhelpers.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qdatastream.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qdeadlinetimer.h \
+	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qdebug.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qelapsedtimer.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qeventloop.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qexceptionhandling.h \
@@ -927,6 +938,7 @@ FocusForgeApp_autogen/timestamp: \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qgenericatomic.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qglobal.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qglobalstatic.h \
+	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qhash.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qhashfunctions.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qiodevicebase.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qiterable.h \
@@ -935,6 +947,7 @@ FocusForgeApp_autogen/timestamp: \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qlist.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qlogging.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qmalloc.h \
+	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qmap.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qmath.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qmetacontainer.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qmetatype.h \
@@ -951,6 +964,11 @@ FocusForgeApp_autogen/timestamp: \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qrefcount.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qscopedpointer.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qscopeguard.h \
+	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qset.h \
+	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qshareddata.h \
+	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qshareddata_impl.h \
+	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qsharedpointer.h \
+	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qsharedpointer_impl.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qstdlibdetection.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qstring.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qstringalgorithms.h \
@@ -976,6 +994,7 @@ FocusForgeApp_autogen/timestamp: \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qtdeprecationdefinitions.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qtdeprecationmarkers.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qtenvironmentvariables.h \
+	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qtextstream.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qtformat_impl.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qtimer.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qtmetamacros.h \
@@ -990,6 +1009,8 @@ FocusForgeApp_autogen/timestamp: \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qtypes.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qurl.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qutf8stringview.h \
+	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qvariant.h \
+	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qvarlengtharray.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qversiontagging.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qxptype_traits.h \
 	/opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/Headers/qyieldcpu.h \
