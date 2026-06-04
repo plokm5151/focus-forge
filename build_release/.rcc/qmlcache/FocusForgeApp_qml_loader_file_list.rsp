@@ -1,0 +1,9 @@
+--resource
+/Users/plokm/Downloads/focus-forge/build_release/.qt/rcc/qmake_FocusForgeApp.qrc
+--resource
+/Users/plokm/Downloads/focus-forge/build_release/.qt/rcc/FocusForgeApp_raw_qml_0.qrc
+--resource
+/Users/plokm/Downloads/focus-forge/build_release/.qt/rcc/app_shaders.qrc
+/qt/qml/FocusForgeApp/qml/Main.qml
+/qt/qml/FocusForgeApp/qml/components/BreathingOrb.qml
+/qt/qml/FocusForgeApp/qml/components/QuickCapturePopup.qml

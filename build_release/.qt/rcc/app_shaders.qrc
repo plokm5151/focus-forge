@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/shaders">
+    <file alias="shaders/breathing_orb.frag.qsb">/Users/plokm/Downloads/focus-forge/build_release/.qsb/shaders/breathing_orb.frag.qsb</file>
+  </qresource>
+</RCC>
+

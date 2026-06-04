@@ -1,0 +1,36 @@
+{
+    "classes": [
+        {
+            "className": "AudioController",
+            "lineNumber": 34,
+            "object": true,
+            "qualifiedClassName": "brain::presentation::AudioController",
+            "slots": [
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "newState",
+                            "type": "brain::domain::TimerState"
+                        },
+                        {
+                            "name": "oldState",
+                            "type": "brain::domain::TimerState"
+                        }
+                    ],
+                    "index": 0,
+                    "name": "onTimerStateChanged",
+                    "returnType": "void"
+                }
+            ],
+            "superClasses": [
+                {
+                    "access": "public",
+                    "name": "QObject"
+                }
+            ]
+        }
+    ],
+    "inputFile": "AudioController.h",
+    "outputRevision": 69
+}

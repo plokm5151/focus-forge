@@ -20,7 +20,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick ShaderTools Multimedia)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 ShaderTools Multimedia)
 qt_policy(SET QTP0001 NEW)
 
 # ---- Strict Compiler Warnings ----
@@ -93,7 +93,7 @@ set(QML_RESOURCES
 # ============================================================================
 set(APP_TARGET FocusForgeApp)
 
-qt_add_executable(${APP_TARGET}
+qt_add_executable(${APP_TARGET} MACOSX_BUNDLE
     src/main.cpp
     ${DOMAIN_SOURCES}
     ${INFRASTRUCTURE_SOURCES}
@@ -107,7 +107,16 @@ target_link_libraries(${APP_TARGET} PRIVATE
     Qt6::Gui
     Qt6::Qml
     Qt6::Quick
+    Qt6::QuickControls2
     Qt6::Multimedia
+)
+
+# ---- macOS Bundle Config ----
+set(APP_ICON "assets/images/app_icon.icns")
+set_source_files_properties(${APP_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+target_sources(${APP_TARGET} PRIVATE ${APP_ICON})
+set_target_properties(${APP_TARGET} PROPERTIES
+    MACOSX_BUNDLE_ICON_FILE "app_icon.icns"
 )
 
 # ---- Copy Assets ----

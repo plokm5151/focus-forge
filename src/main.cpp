@@ -30,6 +30,7 @@
 #include <QDir>
 #include <QDirIterator>
 #include <QDebug>
+#include <QQuickStyle>
 
 #include <iostream>
 #include <memory>
@@ -48,9 +49,12 @@
 auto main(int argc, char* argv[]) -> int {
     // ---- Qt Application Setup ----
     QGuiApplication app{argc, argv};
-    QGuiApplication::setApplicationName("Brain Maintenance Dashboard");
+    QGuiApplication::setApplicationName("FocusForgeApp");
     QGuiApplication::setApplicationVersion("0.3.0");
-    QGuiApplication::setOrganizationName("BrainMaintenance");
+    QGuiApplication::setOrganizationName("FocusForge");
+
+    // Force basic style to prevent macOS native elements from overriding custom QML background styling
+    QQuickStyle::setStyle("Basic");
 
     // ---- Configuration (loads from config.json or uses defaults) ----
     auto& config = brain::infrastructure::AppConfig::instance();
