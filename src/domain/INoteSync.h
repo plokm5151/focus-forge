@@ -14,6 +14,8 @@
 #define BRAIN_MAINTENANCE_DOMAIN_INOTESYNC_H
 
 #include <string_view>
+#include <string>
+#include <vector>
 
 namespace brain::domain {
 
@@ -69,6 +71,26 @@ public:
      * @param taskText The text of the task to append.
      */
     virtual void appendTodo(std::string_view taskText) = 0;
+
+    struct TaskItem {
+        std::string text;
+        bool isCompleted;
+    };
+
+    /**
+     * @brief Reads tasks from the sync target.
+     *
+     * @return A vector of parsed tasks.
+     */
+    [[nodiscard]] virtual auto readTasks() const -> std::vector<TaskItem> = 0;
+
+    /**
+     * @brief Updates the completion state of a specific task by index.
+     *
+     * @param index The zero-based index of the task.
+     * @param isCompleted The new completion state.
+     */
+    virtual void updateTask(int index, bool isCompleted) = 0;
 
     // --- Deleted copy/move to prevent slicing ---
     INoteSync(const INoteSync&) = delete;

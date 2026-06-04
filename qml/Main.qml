@@ -107,8 +107,17 @@ ApplicationWindow {
             }
         }
 
+        // ── Todo List Panel ──
+        TodoListPanel {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.margins: 10
+            Layout.preferredHeight: 150
+            Layout.maximumHeight: 250
+        }
+
         // ── Spacer ──
-        Item { Layout.fillHeight: true }
+        Item { Layout.preferredHeight: 10 }
 
         // ── Control Buttons ──
         RowLayout {
@@ -119,11 +128,21 @@ ApplicationWindow {
             // Start / Resume Button
             Button {
                 id: startBtn
-                text: timerViewModel.currentStateName === "Focusing"
-                      ? qsTr("⏱ Focusing…")
-                      : qsTr("▶  Start Focus")
-                enabled: timerViewModel.currentStateName !== "Focusing"
-                onClicked: timerViewModel.startFocus()
+                text: timerViewModel.currentStateName === "Idle"
+                      ? qsTr("▶  Start Focus")
+                      : (timerViewModel.currentStateName === "Focusing" ? qsTr("⏸ Pause") : qsTr("▶  Continue"))
+                enabled: true
+                scale: pressed ? 0.95 : 1.0
+
+                onClicked: {
+                    if (timerViewModel.currentStateName === "Focusing") {
+                        timerViewModel.pauseFocus();
+                    } else {
+                        timerViewModel.startFocus();
+                    }
+                }
+
+                Behavior on scale { NumberAnimation { duration: 150 } }
 
                 contentItem: Text {
                     text: startBtn.text
@@ -144,39 +163,6 @@ ApplicationWindow {
                            : "#1a2a3a"
                     border.width: 1
                     border.color: startBtn.enabled ? "#00e0ff33" : "#ffffff10"
-
-                    Behavior on color {
-                        ColorAnimation { duration: 200 }
-                    }
-                }
-            }
-
-            // Pause Button
-            Button {
-                id: pauseBtn
-                text: qsTr("⏸  Pause")
-                enabled: timerViewModel.currentStateName === "Focusing"
-                onClicked: timerViewModel.pauseFocus()
-
-                contentItem: Text {
-                    text: pauseBtn.text
-                    font.pixelSize: 15
-                    font.weight: Font.Medium
-                    font.family: "Inter, Segoe UI, sans-serif"
-                    color: pauseBtn.enabled ? "#ffffff" : "#555555"
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-
-                background: Rectangle {
-                    implicitWidth: 140
-                    implicitHeight: 48
-                    radius: 12
-                    color: pauseBtn.enabled
-                           ? (pauseBtn.hovered ? "#6d28d9" : "#4c1d95")
-                           : "#151525"
-                    border.width: 1
-                    border.color: pauseBtn.enabled ? "#a855f733" : "#ffffff10"
 
                     Behavior on color {
                         ColorAnimation { duration: 200 }
@@ -211,5 +197,10 @@ ApplicationWindow {
 
     QuickCapturePopup {
         id: quickCapturePopup
+        
+        // Refresh todo list model after adding a task
+        onClosed: {
+            todoListModel.loadTasks()
+        }
     }
 }

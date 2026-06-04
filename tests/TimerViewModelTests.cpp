@@ -41,6 +41,8 @@ public:
 
     MOCK_METHOD(bool, syncText, (std::string_view text), (override));
     MOCK_METHOD(void, appendTodo, (std::string_view taskText), (override));
+    MOCK_METHOD(std::vector<TaskItem>, readTasks, (), (const, override));
+    MOCK_METHOD(void, updateTask, (int index, bool isCompleted), (override));
 };
 
 // ===========================================================================

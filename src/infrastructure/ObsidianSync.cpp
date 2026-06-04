@@ -101,4 +101,57 @@ void ObsidianSync::appendTodo(std::string_view taskText) {
     ofs.flush();
 }
 
+auto ObsidianSync::readTasks() const -> std::vector<TaskItem> {
+    std::vector<TaskItem> tasks;
+    if (m_vaultPath.empty()) return tasks;
+
+    const fs::path taskFilePath = fs::path{m_vaultPath} / "FocusTasks.md";
+    std::ifstream ifs{taskFilePath};
+    if (!ifs.is_open()) return tasks;
+
+    std::string line;
+    while (std::getline(ifs, line)) {
+        if (line.starts_with("- [ ] ")) {
+            tasks.push_back(TaskItem{line.substr(6), false});
+        } else if (line.starts_with("- [x] ")) {
+            tasks.push_back(TaskItem{line.substr(6), true});
+        } else if (line.starts_with("- [X] ")) {
+            tasks.push_back(TaskItem{line.substr(6), true});
+        }
+    }
+    return tasks;
+}
+
+void ObsidianSync::updateTask(int index, bool isCompleted) {
+    if (m_vaultPath.empty() || index < 0) return;
+
+    const fs::path taskFilePath = fs::path{m_vaultPath} / "FocusTasks.md";
+    std::ifstream ifs{taskFilePath};
+    if (!ifs.is_open()) return;
+
+    std::vector<std::string> lines;
+    std::string line;
+    int currentTaskIndex = 0;
+
+    while (std::getline(ifs, line)) {
+        if (line.starts_with("- [ ] ") || line.starts_with("- [x] ") || line.starts_with("- [X] ")) {
+            if (currentTaskIndex == index) {
+                // Update this task line
+                std::string prefix = isCompleted ? "- [x] " : "- [ ] ";
+                line = prefix + line.substr(6);
+            }
+            currentTaskIndex++;
+        }
+        lines.push_back(line);
+    }
+    ifs.close();
+
+    std::ofstream ofs{taskFilePath, std::ios::trunc};
+    if (!ofs.is_open()) return;
+
+    for (const auto& l : lines) {
+        ofs << l << '\n';
+    }
+}
+
 } // namespace brain::infrastructure

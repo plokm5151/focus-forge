@@ -68,6 +68,9 @@ public:
      * @param taskText The text of the task to append.
      */
     void appendTodo(std::string_view taskText) override;
+    
+    [[nodiscard]] auto readTasks() const -> std::vector<TaskItem> override;
+    void updateTask(int index, bool isCompleted) override;
 
 private:
     std::string m_vaultPath;     ///< Absolute path to the Obsidian vault.

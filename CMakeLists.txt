@@ -80,12 +80,15 @@ set(PRESENTATION_SOURCES
     src/presentation/TimerViewModel.cpp
     src/presentation/AudioController.h
     src/presentation/AudioController.cpp
+    src/presentation/TodoListModel.h
+    src/presentation/TodoListModel.cpp
 )
 
 set(QML_RESOURCES
     qml/Main.qml
     qml/components/BreathingOrb.qml
     qml/components/QuickCapturePopup.qml
+    qml/components/TodoListPanel.qml
 )
 
 # ============================================================================

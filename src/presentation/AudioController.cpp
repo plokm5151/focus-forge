@@ -10,10 +10,25 @@
 
 #include <QCoreApplication>
 #include <QUrl>
+#include <QString>
 
 namespace brain::presentation {
 
 using brain::domain::TimerState;
+
+// Helper to correctly resolve asset paths regardless of whether running locally or inside a macOS .app bundle.
+static auto resolveAssetPath(const QString& relativePath) -> QString {
+    QString appDir = QCoreApplication::applicationDirPath();
+#ifdef Q_OS_MAC
+    if (appDir.endsWith(QStringLiteral("Contents/MacOS"))) {
+        // App is bundled, assets are in Contents/Resources
+        QString resourceDir = appDir;
+        resourceDir.replace(QStringLiteral("Contents/MacOS"), QStringLiteral("Contents/Resources"));
+        return resourceDir + QStringLiteral("/") + relativePath;
+    }
+#endif
+    return appDir + QStringLiteral("/") + relativePath;
+}
 
 AudioController::AudioController(QObject* parent)
     : QObject{parent}
@@ -26,8 +41,7 @@ AudioController::AudioController(QObject* parent)
     m_bgPlayer->setLoops(QMediaPlayer::Infinite);
     
     // Pre-load the WAV file for zero-latency bell
-    QString appDir = QCoreApplication::applicationDirPath();
-    m_bellSound->setSource(QUrl::fromLocalFile(appDir + QStringLiteral("/assets/audio/bell.wav")));
+    m_bellSound->setSource(QUrl::fromLocalFile(resolveAssetPath(QStringLiteral("assets/audio/bell.wav"))));
     
     // Default volume (can be configured via AppConfig in the future)
     m_bgOutput->setVolume(0.5f);
@@ -37,16 +51,14 @@ AudioController::AudioController(QObject* parent)
 void AudioController::onTimerStateChanged(TimerState newState, TimerState oldState) {
     Q_UNUSED(oldState);
 
-    QString appDir = QCoreApplication::applicationDirPath();
-
     // The bell always chimes on any state transition triggered by the system or user
     m_bellSound->play();
 
     if (newState == TimerState::Focusing) {
-        m_bgPlayer->setSource(QUrl::fromLocalFile(appDir + QStringLiteral("/assets/audio/focus.ogg")));
+        m_bgPlayer->setSource(QUrl::fromLocalFile(resolveAssetPath(QStringLiteral("assets/audio/focus.ogg"))));
         m_bgPlayer->play();
     } else if (newState == TimerState::CoolDown) {
-        m_bgPlayer->setSource(QUrl::fromLocalFile(appDir + QStringLiteral("/assets/audio/cooldown.mp3")));
+        m_bgPlayer->setSource(QUrl::fromLocalFile(resolveAssetPath(QStringLiteral("assets/audio/cooldown.mp3"))));
         m_bgPlayer->play();
     } else if (newState == TimerState::Idle) {
         m_bgPlayer->stop();

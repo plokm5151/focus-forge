@@ -23,6 +23,7 @@
 #include "infrastructure/ObsidianSync.h"
 #include "presentation/TimerViewModel.h"
 #include "presentation/AudioController.h"
+#include "presentation/TodoListModel.h"
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -31,6 +32,8 @@
 #include <QDirIterator>
 #include <QDebug>
 #include <QQuickStyle>
+#include <QFont>
+#include <QFontDatabase>
 
 #include <iostream>
 #include <memory>
@@ -47,14 +50,18 @@
  * @return Exit code (0 on success).
  */
 auto main(int argc, char* argv[]) -> int {
+    // Force basic style to prevent macOS native elements from overriding custom QML background styling
+    // MUST be called before QGuiApplication is created.
+    QQuickStyle::setStyle("Basic");
+
     // ---- Qt Application Setup ----
     QGuiApplication app{argc, argv};
     QGuiApplication::setApplicationName("FocusForgeApp");
     QGuiApplication::setApplicationVersion("0.3.0");
     QGuiApplication::setOrganizationName("FocusForge");
 
-    // Force basic style to prevent macOS native elements from overriding custom QML background styling
-    QQuickStyle::setStyle("Basic");
+    // Fix the alias font warning in macOS by explicitly setting a default font
+    app.setFont(QFont("Helvetica Neue", 12));
 
     // ---- Configuration (loads from config.json or uses defaults) ----
     auto& config = brain::infrastructure::AppConfig::instance();
@@ -74,7 +81,11 @@ auto main(int argc, char* argv[]) -> int {
     auto timerViewModel =
         std::make_unique<brain::presentation::TimerViewModel>(noteSync);
 
-    // 3. Create the AudioController and connect the state change signal
+    // 3. Create the TodoListModel
+    auto todoListModel =
+        std::make_unique<brain::presentation::TodoListModel>(std::static_pointer_cast<brain::infrastructure::ObsidianSync>(noteSync));
+
+    // 4. Create the AudioController and connect the state change signal
     auto audioController = std::make_unique<brain::presentation::AudioController>();
     QObject::connect(
         timerViewModel.get(), &brain::presentation::TimerViewModel::timerStateChanged,
@@ -84,9 +95,11 @@ auto main(int argc, char* argv[]) -> int {
     // ---- QML Engine Setup ----
     QQmlApplicationEngine engine;
 
-    // 3. Expose the ViewModel to QML via context property
+    // 5. Expose the ViewModel and Models to QML via context property
     engine.rootContext()->setContextProperty(
         "timerViewModel", timerViewModel.get());
+    engine.rootContext()->setContextProperty(
+        "todoListModel", todoListModel.get());
 
     // Handle QML loading errors gracefully
     QObject::connect(
