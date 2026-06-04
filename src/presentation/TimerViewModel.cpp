@@ -126,6 +126,12 @@ void TimerViewModel::startFocus() {
         return; // Already running — no-op
     }
 
+    if (m_state == TimerState::Paused) {
+        setState(TimerState::Focusing);
+        m_tickTimer->start();
+        return;
+    }
+
     // Reset countdown unless a test override was injected
     if (!m_testOverride) {
         m_remainingSeconds = m_focusDurationMinutes * 60;
@@ -143,6 +149,7 @@ void TimerViewModel::pauseFocus() {
     }
 
     m_tickTimer->stop();
+    setState(TimerState::Paused);
 }
 
 void TimerViewModel::submitTodo(const QString& text) {
@@ -215,6 +222,7 @@ auto TimerViewModel::stateToString(TimerState state) -> QString {
     case TimerState::Idle:     return QStringLiteral("Idle");
     case TimerState::Focusing: return QStringLiteral("Focusing");
     case TimerState::CoolDown: return QStringLiteral("CoolDown");
+    case TimerState::Paused:   return QStringLiteral("Paused");
     }
     return QStringLiteral("Unknown");
 }

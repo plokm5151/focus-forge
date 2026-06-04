@@ -70,11 +70,15 @@ void AudioController::onTimerStateChanged(TimerState newState, TimerState oldSta
 #endif
 
     if (newState == TimerState::Focusing) {
-        m_bgPlayer->setSource(QUrl::fromLocalFile(audioDir + "focus.mp3"));
+        if (oldState != TimerState::Paused) {
+            m_bgPlayer->setSource(QUrl::fromLocalFile(audioDir + "focus.mp3"));
+        }
         m_bgPlayer->play();
     } else if (newState == TimerState::CoolDown) {
         m_bgPlayer->setSource(QUrl::fromLocalFile(audioDir + "cooldown.mp3"));
         m_bgPlayer->play();
+    } else if (newState == TimerState::Paused) {
+        m_bgPlayer->pause();
     } else if (newState == TimerState::Idle) {
         m_bgPlayer->stop();
     }

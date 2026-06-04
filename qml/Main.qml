@@ -131,7 +131,7 @@ ApplicationWindow {
             // Start / Resume Button
             Button {
                 id: startBtn
-                text: timerViewModel.currentStateName === "Idle" ? "Start Focus" : "Pause"
+                text: timerViewModel.currentStateName === "Idle" ? "Start Focus" : (timerViewModel.currentStateName === "Paused" ? "Resume" : "Pause")
                 enabled: true
                 scale: pressed ? 0.95 : 1.0
 
@@ -160,7 +160,7 @@ ApplicationWindow {
                     implicitHeight: 48
                     radius: 12
                     color: startBtn.enabled
-                           ? (startBtn.hovered ? "#00c8e0" : "#00a0c0")
+                           ? (startBtn.pressed ? "#007a8c" : (startBtn.hovered ? "#00c8e0" : "#00a0c0"))
                            : "#1a2a3a"
                     border.width: 1
                     border.color: startBtn.enabled ? "#00e0ff33" : "#ffffff10"

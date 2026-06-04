@@ -39,7 +39,8 @@ namespace brain::domain {
 enum class TimerState : std::uint8_t {
     Idle     = 0,  ///< No active session; timer ready.
     Focusing = 1,  ///< Focus session in progress; counting down.
-    CoolDown = 2   ///< Session completed; cooldown / rest period.
+    CoolDown = 2,  ///< Session completed; cooldown / rest period.
+    Paused   = 3   ///< Session is paused by the user.
 };
 
 } // namespace brain::domain
