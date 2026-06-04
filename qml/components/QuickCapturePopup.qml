@@ -3,7 +3,8 @@
  * @brief Glassmorphic quick capture popup for logging tasks to Obsidian.
  *
  * Activated via global shortcut (Cmd+T / Ctrl+T). Provides a sleek,
- * distraction-free input field for task capture.
+ * distraction-free input field for task capture. Supports keyboard-based
+ * metadata parsing (e.g., !h for High Priority, !t for Today).
  */
 import QtQuick
 import QtQuick.Controls
@@ -13,18 +14,14 @@ import QtQuick.Layouts
 Popup {
     id: popup
     anchors.centerIn: Overlay.overlay
-    width: 400
-    height: 140
+    width: 460
+    height: 80
     modal: true
     focus: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
     // Property to expose the text field for focusing
     property alias captureInput: taskInput
-    
-    // State properties for new task metadata
-    property int selectedPriority: 0 // 0=None, 1=Low, 2=Med, 3=High
-    property string selectedDueDate: ""
 
     // ── Glassmorphic Background ──
     background: Rectangle {
@@ -43,87 +40,57 @@ Popup {
         }
     }
 
-    ColumnLayout {
+    // ── Input Field ──
+    contentItem: TextField {
+        id: taskInput
         anchors.fill: parent
-        anchors.margins: 12
-        spacing: 8
-
-        // ── Input Field ──
-        TextField {
-            id: taskInput
-            Layout.fillWidth: true
-            Layout.preferredHeight: 40
-            
-            placeholderText: qsTr("Capture a task... (Press Enter)")
-            font.pixelSize: 18
-            font.family: "Inter, Segoe UI, sans-serif"
-            color: "#ffffff"
-            
-            background: Rectangle { color: "transparent" }
-            
-            onAccepted: {
-                if (text.trim() !== "") {
-                    timerViewModel.submitTodoWithMetadata(text.trim(), popup.selectedPriority, popup.selectedDueDate)
-                    text = ""
-                    popup.selectedPriority = 0
-                    popup.selectedDueDate = ""
-                    popup.close()
+        anchors.margins: 4
+        
+        placeholderText: qsTr("Capture... (Use !h/m/l for priority, !t/tmrw for date)")
+        font.pixelSize: 18
+        font.family: "Inter, Segoe UI, sans-serif"
+        color: "#ffffff"
+        
+        background: Rectangle { color: "transparent" }
+        
+        onAccepted: {
+            let rawText = text.trim()
+            if (rawText !== "") {
+                // Parse Priority
+                let prio = 0
+                if (rawText.match(/\s!(high|h)\b/i) || rawText.match(/^!(high|h)\b/i)) {
+                    prio = 3
+                    rawText = rawText.replace(/\s*!(high|h)\b/ig, "")
+                } else if (rawText.match(/\s!(med|m)\b/i) || rawText.match(/^!(med|m)\b/i)) {
+                    prio = 2
+                    rawText = rawText.replace(/\s*!(med|m)\b/ig, "")
+                } else if (rawText.match(/\s!(low|l)\b/i) || rawText.match(/^!(low|l)\b/i)) {
+                    prio = 1
+                    rawText = rawText.replace(/\s*!(low|l)\b/ig, "")
                 }
-            }
-        }
 
-        // ── Metadata Controls ──
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 12
-
-            Text {
-                text: "Priority:"
-                color: "#8888aa"
-                font.pixelSize: 12
-            }
-
-            ComboBox {
-                id: priorityCombo
-                model: ["None", "Low", "Medium", "High"]
-                currentIndex: 0
-                Layout.preferredHeight: 30
-                Layout.preferredWidth: 100
-                onActivated: {
-                    if (currentIndex === 1) popup.selectedPriority = 1;
-                    else if (currentIndex === 2) popup.selectedPriority = 2;
-                    else if (currentIndex === 3) popup.selectedPriority = 3;
-                    else popup.selectedPriority = 0;
+                // Parse Date
+                let dateStr = ""
+                if (rawText.match(/\s!(today|t)\b/i) || rawText.match(/^!(today|t)\b/i)) {
+                    let d = new Date()
+                    let year = d.getFullYear()
+                    let month = String(d.getMonth() + 1).padStart(2, '0')
+                    let day = String(d.getDate()).padStart(2, '0')
+                    dateStr = `${year}-${month}-${day}`
+                    rawText = rawText.replace(/\s*!(today|t)\b/ig, "")
+                } else if (rawText.match(/\s!(tomorrow|tmrw)\b/i) || rawText.match(/^!(tomorrow|tmrw)\b/i)) {
+                    let d = new Date()
+                    d.setDate(d.getDate() + 1)
+                    let year = d.getFullYear()
+                    let month = String(d.getMonth() + 1).padStart(2, '0')
+                    let day = String(d.getDate()).padStart(2, '0')
+                    dateStr = `${year}-${month}-${day}`
+                    rawText = rawText.replace(/\s*!(tomorrow|tmrw)\b/ig, "")
                 }
-            }
 
-            Text {
-                text: "Date:"
-                color: "#8888aa"
-                font.pixelSize: 12
-                Layout.leftMargin: 12
-            }
-
-            ComboBox {
-                id: dateCombo
-                model: ["No Date", "Today", "Tomorrow"]
-                currentIndex: 0
-                Layout.preferredHeight: 30
-                Layout.preferredWidth: 110
-                onActivated: {
-                    if (currentIndex === 0) {
-                        popup.selectedDueDate = "";
-                    } else {
-                        const d = new Date();
-                        if (currentIndex === 2) {
-                            d.setDate(d.getDate() + 1);
-                        }
-                        const year = d.getFullYear();
-                        const month = String(d.getMonth() + 1).padStart(2, '0');
-                        const day = String(d.getDate()).padStart(2, '0');
-                        popup.selectedDueDate = `${year}-${month}-${day}`;
-                    }
-                }
+                timerViewModel.submitTodoWithMetadata(rawText.trim(), prio, dateStr)
+                text = ""
+                popup.close()
             }
         }
     }

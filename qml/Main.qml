@@ -323,6 +323,7 @@ ApplicationWindow {
         // Refresh todo list model after adding a task
         onClosed: {
             todoListModel.loadTasks()
+            todoListPanel.visible = true // Auto-open the panel so the user sees the new task
         }
     }
 }
