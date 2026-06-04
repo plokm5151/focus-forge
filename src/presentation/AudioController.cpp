@@ -69,16 +69,17 @@ void AudioController::toggleMute() {
 }
 
 void AudioController::onTimerStateChanged(TimerState newState, TimerState oldState) {
-    Q_UNUSED(oldState);
-
-    // The bell always chimes on any state transition triggered by the system or user
-    qDebug() << "Playing audio:" << m_bellPlayer->source();
+    qDebug() << "Audio Transition - Old:" << static_cast<int>(oldState) << "New:" << static_cast<int>(newState);
     
-    // If the bell is already playing (rapid transitions), stop and restart it to ensure clean playback
-    if (m_bellPlayer->playbackState() == QMediaPlayer::PlayingState) {
+    // Play the bell ONLY when an automated session completes (Focusing -> CoolDown, or CoolDown -> Idle)
+    bool isSessionComplete = (oldState == TimerState::Focusing && newState == TimerState::CoolDown) ||
+                             (oldState == TimerState::CoolDown && newState == TimerState::Idle);
+
+    if (isSessionComplete) {
         m_bellPlayer->stop();
+        m_bellPlayer->setPosition(0);
+        m_bellPlayer->play();
     }
-    m_bellPlayer->play();
 
 #ifdef Q_OS_MAC
     QString audioDir = QCoreApplication::applicationDirPath() + "/../Resources/assets/audio/";

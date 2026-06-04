@@ -131,5 +131,8 @@ auto main(int argc, char* argv[]) -> int {
     }
 
     // ---- Enter Event Loop ----
-    return QGuiApplication::exec();
+    QTimer::singleShot(1000, [tvm = timerViewModel.get()]() { 
+        qDebug() << "Auto-starting focus"; 
+        tvm->startFocus(); 
+    });    return QGuiApplication::exec();
 }
