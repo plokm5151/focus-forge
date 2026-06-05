@@ -62,33 +62,49 @@ ApplicationWindow {
             // Pin (Always on top) Toggle
             Button {
                 id: pinBtn
-                text: "📌"
-                font.pixelSize: 18
+                icon.source: "qrc:/qt/qml/FocusForgeApp/assets/icons/pin.svg"
+                icon.color: root.isAlwaysOnTop ? "#00e0ff" : "#8888aa"
+                icon.width: 20
+                icon.height: 20
                 background: Rectangle { color: "transparent" }
-                opacity: root.isAlwaysOnTop ? 1.0 : 0.4
+                opacity: root.isAlwaysOnTop ? 1.0 : 0.6
                 onClicked: {
                     root.isAlwaysOnTop = !root.isAlwaysOnTop
                 }
             }
 
             // App Title
-            Text {
+            RowLayout {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.fillWidth: true
-                text: qsTr("🧠 Brain Maintenance")
-                font.pixelSize: 24
-                font.weight: Font.DemiBold
-                font.family: "Inter"
-                color: "#8888aa"
-                opacity: 0.9
-                horizontalAlignment: Text.AlignHCenter
+                spacing: 8
+                
+                IconImage {
+                    source: "qrc:/qt/qml/FocusForgeApp/assets/icons/activity.svg"
+                    color: "#8888aa"
+                    sourceSize.width: 24
+                    sourceSize.height: 24
+                    Layout.alignment: Qt.AlignVCenter
+                }
+                
+                Text {
+                    text: qsTr("Brain Maintenance")
+                    font.pixelSize: 22
+                    font.weight: Font.DemiBold
+                    font.family: "Inter"
+                    color: "#8888aa"
+                    opacity: 0.9
+                    Layout.alignment: Qt.AlignVCenter
+                }
             }
 
             // Mute Button
             Button {
                 id: muteBtn
-                text: audioController.isMuted ? "🔇" : "🔊"
-                font.pixelSize: 18
+                icon.source: audioController.isMuted ? "qrc:/qt/qml/FocusForgeApp/assets/icons/volume-x.svg" : "qrc:/qt/qml/FocusForgeApp/assets/icons/volume.svg"
+                icon.color: audioController.isMuted ? "#666688" : "#8888aa"
+                icon.width: 20
+                icon.height: 20
                 background: Rectangle { color: "transparent" }
                 opacity: 0.8
                 onClicked: {
@@ -139,10 +155,12 @@ ApplicationWindow {
             // Todo List Toggle
             Button {
                 id: todoBtn
-                text: "📝"
-                font.pixelSize: 18
+                icon.source: "qrc:/qt/qml/FocusForgeApp/assets/icons/list.svg"
+                icon.color: todoListPanel.visible ? "#00e0ff" : "#8888aa"
+                icon.width: 20
+                icon.height: 20
                 background: Rectangle { color: "transparent" }
-                opacity: todoListPanel.visible ? 1.0 : 0.4
+                opacity: todoListPanel.visible ? 1.0 : 0.6
                 onClicked: {
                     todoListPanel.visible = !todoListPanel.visible
                 }

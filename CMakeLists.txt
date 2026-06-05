@@ -140,6 +140,17 @@ qt_add_qml_module(${APP_TARGET}
     URI FocusForgeApp
     VERSION 1.0
     QML_FILES ${QML_RESOURCES}
+    RESOURCES
+        assets/icons/pin.svg
+        assets/icons/volume.svg
+        assets/icons/volume-x.svg
+        assets/icons/list.svg
+        assets/icons/coffee.svg
+        assets/icons/skip-forward.svg
+        assets/icons/square.svg
+        assets/icons/target.svg
+        assets/icons/lightbulb.svg
+        assets/icons/activity.svg
 )
 
 # ---- Shader Compilation (Qt Shader Baker → .qsb) ----
