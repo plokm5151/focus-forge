@@ -100,8 +100,8 @@ ApplicationWindow {
             // Mute Button
             Button {
                 id: muteBtn
-                icon.source: audioController.isMuted ? "qrc:/qt/qml/FocusForgeApp/assets/icons/volume-x.svg" : "qrc:/qt/qml/FocusForgeApp/assets/icons/volume.svg"
-                icon.color: audioController.isMuted ? "#666688" : "#8888aa"
+                icon.source: (audioController.isMuted || audioController.volume === 0) ? "qrc:/qt/qml/FocusForgeApp/assets/icons/volume-x.svg" : "qrc:/qt/qml/FocusForgeApp/assets/icons/volume.svg"
+                icon.color: (audioController.isMuted || audioController.volume === 0) ? "#666688" : "#8888aa"
                 icon.width: 20
                 icon.height: 20
                 background: Rectangle { color: "transparent" }
@@ -530,6 +530,7 @@ ApplicationWindow {
         sequences: ["Ctrl+Up", "Meta+Up"]
         onActivated: {
             audioController.volume = Math.min(1.0, audioController.volume + 0.1)
+            showVolumeToast()
         }
     }
 
@@ -537,6 +538,67 @@ ApplicationWindow {
         sequences: ["Ctrl+Down", "Meta+Down"]
         onActivated: {
             audioController.volume = Math.max(0.0, audioController.volume - 0.1)
+            showVolumeToast()
+        }
+    }
+
+    // Volume Toast
+    function showVolumeToast() {
+        volumeToast.opacity = 1.0
+        volumeToastHideTimer.restart()
+    }
+
+    Rectangle {
+        id: volumeToast
+        width: 160
+        height: 40
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 30
+        anchors.horizontalCenter: parent.horizontalCenter
+        color: "#d91a1a2e"
+        radius: 20
+        border.width: 1
+        border.color: "#33ffffff"
+        opacity: 0.0
+        z: 100
+
+        Behavior on opacity { NumberAnimation { duration: 200 } }
+
+        RowLayout {
+            anchors.centerIn: parent
+            spacing: 8
+            
+            Text {
+                text: audioController.isMuted || audioController.volume === 0 ? "🔇" : "🔊"
+                font.pixelSize: 14
+            }
+            
+            Rectangle {
+                width: 80
+                height: 6
+                radius: 3
+                color: "#33ffffff"
+                
+                Rectangle {
+                    width: parent.width * audioController.volume
+                    height: parent.height
+                    radius: 3
+                    color: "#00e0ff"
+                }
+            }
+            
+            Text {
+                text: Math.round(audioController.volume * 100) + "%"
+                color: "#ffffff"
+                font.pixelSize: 12
+                font.family: "Inter"
+            }
+        }
+
+        Timer {
+            id: volumeToastHideTimer
+            interval: 1500
+            onTriggered: volumeToast.opacity = 0.0
         }
     }
 
