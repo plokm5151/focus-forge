@@ -122,3 +122,4 @@ coverage.info
 docs/generated/
 docs/html/
 docs/latex/
+*.log
