@@ -8,6 +8,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Effects
 import "components"
 
 ApplicationWindow {
@@ -209,26 +210,12 @@ ApplicationWindow {
                 anchors.centerIn: parent
                 isActive: timerViewModel.currentStateName === "Focusing" || timerViewModel.currentStateName === "Overtime"
                 fireColor: timerViewModel.currentStateName === "Overtime" ? "#ff8c00" : "#00e0ff"
-
-                Connections {
-                    target: timerViewModel
-                    function onPointsEarned(amount) {
-                        let c = Qt.createComponent("components/FloatingScoreText.qml")
-                        if (c.status === Component.Ready) {
-                            let obj = c.createObject(ghostFire, {
-                                "text": "+" + amount,
-                                "color": ghostFire.fireColor,
-                                "x": ghostFire.width / 2 - 20,
-                                "y": -20
-                            })
-                        }
-                    }
-                }
             }
         }
 
         // ── Breathing Orb (Central Visual — clickable for play/pause) ──
         BreathingOrb {
+            id: breathingOrb
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: todoListPanel.visible ? 160 : 300
             Layout.preferredHeight: todoListPanel.visible ? 160 : 300
@@ -238,6 +225,21 @@ ApplicationWindow {
 
             Behavior on Layout.preferredWidth { NumberAnimation { duration: 400; easing.type: Easing.OutQuart } }
             Behavior on Layout.preferredHeight { NumberAnimation { duration: 400; easing.type: Easing.OutQuart } }
+
+            Connections {
+                target: timerViewModel
+                function onPointsEarned(amount) {
+                    let c = Qt.createComponent("components/FloatingScoreText.qml")
+                    if (c.status === Component.Ready) {
+                        let obj = c.createObject(breathingOrb, {
+                            "text": "+" + amount,
+                            "color": ghostFire.fireColor,
+                            "x": breathingOrb.width / 2 - 20,
+                            "y": breathingOrb.height / 2 - 20
+                        })
+                    }
+                }
+            }
         }
 
         // ── Pinned Focus Objective ──
@@ -259,30 +261,10 @@ ApplicationWindow {
         // ── Spacer ──
         Item { Layout.preferredHeight: 16 }
 
-        // ── Countdown Timer with +/- 5min adjusters ──
+        // ── Countdown Timer ──
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
             spacing: 8
-
-            // -5 min (visible on hover)
-            Button {
-                id: minusBtn
-                visible: timerViewModel.currentStateName === "Idle"
-                text: "-5"
-                font.pixelSize: 12
-                font.family: "Inter"
-                opacity: minusBtn.hovered ? 0.8 : 0.0
-                background: Rectangle { color: "transparent" }
-                contentItem: Text {
-                    text: minusBtn.text
-                    color: "#66ffffff"
-                    font.pixelSize: 12
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-                onClicked: timerViewModel.adjustTime(-5)
-                Behavior on opacity { NumberAnimation { duration: 200 } }
-            }
 
             // Main Timer Display
             Text {
@@ -314,25 +296,6 @@ ApplicationWindow {
                 Behavior on opacity { NumberAnimation { duration: 400 } }
             }
 
-            // +5 min (visible on hover)
-            Button {
-                id: plusBtn
-                visible: timerViewModel.currentStateName === "Idle"
-                text: "+5"
-                font.pixelSize: 12
-                font.family: "Inter"
-                opacity: plusBtn.hovered ? 0.8 : 0.0
-                background: Rectangle { color: "transparent" }
-                contentItem: Text {
-                    text: plusBtn.text
-                    color: "#66ffffff"
-                    font.pixelSize: 12
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-                onClicked: timerViewModel.adjustTime(5)
-                Behavior on opacity { NumberAnimation { duration: 200 } }
-            }
         }
 
         // ── State Label ──
@@ -469,7 +432,7 @@ ApplicationWindow {
                 visible: timerViewModel.currentStateName !== "Idle"
                 scale: pressed ? 0.95 : 1.0
 
-                text: "⏹️ Reset"
+                text: "Reset"
 
                 onClicked: {
                     timerViewModel.stopFocus() // Universally aborts to Idle

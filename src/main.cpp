@@ -92,14 +92,25 @@ auto main(int argc, char* argv[]) -> int {
         audioController.get(), &brain::presentation::AudioController::onTimerStateChanged
     );
 
+    // 5. Create Filter Models for UI separation
+    auto activeTasksModel = std::make_unique<brain::presentation::ActiveTaskFilterModel>();
+    activeTasksModel->setSourceModel(todoListModel.get());
+    
+    auto historyTasksModel = std::make_unique<brain::presentation::HistoryTaskFilterModel>();
+    historyTasksModel->setSourceModel(todoListModel.get());
+
     // ---- QML Engine Setup ----
     QQmlApplicationEngine engine;
 
-    // 5. Expose the ViewModel and Models to QML via context property
+    // 6. Expose the ViewModel and Models to QML via context property
     engine.rootContext()->setContextProperty(
         "timerViewModel", timerViewModel.get());
     engine.rootContext()->setContextProperty(
         "todoListModel", todoListModel.get());
+    engine.rootContext()->setContextProperty(
+        "activeTasksModel", activeTasksModel.get());
+    engine.rootContext()->setContextProperty(
+        "historyTasksModel", historyTasksModel.get());
     engine.rootContext()->setContextProperty(
         "audioController", audioController.get());
 

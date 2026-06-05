@@ -23,7 +23,7 @@ Rectangle {
     readonly property int headerHeight: 40
     readonly property int panelPadding: 32
     implicitHeight: {
-        let contentH = headerHeight + panelPadding + Math.min(todoListModel.rowCount(), maxVisibleItems) * (itemHeight + 8)
+        let contentH = headerHeight + panelPadding + Math.min(activeListView.count + historyListView.count, maxVisibleItems) * (itemHeight + 8)
         return Math.max(80, contentH)
     }
 
@@ -44,7 +44,7 @@ Rectangle {
 
         // ── Empty State Guide ──
         Text {
-            visible: todoListModel.rowCount() === 0
+            visible: (activeListView.count + historyListView.count) === 0
             Layout.fillWidth: true
             Layout.fillHeight: true
             text: qsTr("任務已清空\n按下 Cmd+T 捕捉下一個靈感")
@@ -57,21 +57,15 @@ Rectangle {
             wrapMode: Text.WordWrap
         }
 
-        ListView {
-            id: listView
+        ScrollView {
+            id: scrollView
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
-            spacing: 8
-            visible: todoListModel.rowCount() > 0
-            
-            model: todoListModel
+            visible: (activeListView.count + historyListView.count) > 0
 
-            // Custom scrollbar that appears only when needed
             ScrollBar.vertical: ScrollBar {
-                policy: listView.contentHeight > listView.height ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
                 width: 4
-
                 contentItem: Rectangle {
                     implicitWidth: 4
                     radius: 2
@@ -81,13 +75,65 @@ Rectangle {
                 }
             }
 
-            delegate: Rectangle {
-                id: delegateRoot
-                width: listView.width
-                height: root.itemHeight
-                color: root.confirmingIndex === index ? "#1500e0ff" : "#00000000"
+            ColumnLayout {
+                width: scrollView.width
+                spacing: 0
+
+                ListView {
+                    id: activeListView
+                    objectName: "activeView"
+                    Layout.fillWidth: true
+                    implicitHeight: contentHeight
+                    interactive: false
+                    spacing: 0
+                    model: activeTasksModel
+                    delegate: taskDelegate
+                }
+
+                Text {
+                    Layout.topMargin: 16
+                    Layout.bottomMargin: 8
+                    Layout.alignment: Qt.AlignHCenter
+                    visible: historyListView.count > 0
+                    text: qsTr("HISTORY")
+                    font.pixelSize: 12
+                    font.weight: Font.Medium
+                    font.letterSpacing: 2
+                    font.family: "Inter"
+                    color: "#555577"
+                }
+
+                ListView {
+                    id: historyListView
+                    objectName: "historyView"
+                    Layout.fillWidth: true
+                    implicitHeight: contentHeight
+                    interactive: false
+                    spacing: 0
+                    model: historyTasksModel
+                    delegate: taskDelegate
+                }
+            }
+        }
+
+        Component {
+            id: taskDelegate
+            Item {
+                // Determine source index for modifications
+                property int sourceIndex: ListView.view.model.mapRowToSource(index)
+                
+                width: ListView.view ? ListView.view.width : 0
+                height: root.itemHeight + 8
+                visible: true
+
+                Rectangle {
+                    id: delegateRoot
+                    width: parent.width
+                    height: root.itemHeight
+                    anchors.bottom: parent.bottom
+                color: root.confirmingIndex === sourceIndex ? "#1500e0ff" : "#00000000"
                 radius: 8
-                border.width: root.confirmingIndex === index ? 1 : 0
+                border.width: root.confirmingIndex === sourceIndex ? 1 : 0
                 border.color: "#4400e0ff"
 
                 Behavior on color { ColorAnimation { duration: 200 } }
@@ -101,20 +147,20 @@ Rectangle {
                     // Pin Button (visible on hover)
                     Button {
                         id: pinBtn
-                        icon.source: todoListModel.pinnedIndex === index ? "qrc:/qt/qml/FocusForgeApp/assets/icons/pin.svg" : "qrc:/qt/qml/FocusForgeApp/assets/icons/pin-off.svg"
-                        icon.color: todoListModel.pinnedIndex === index ? "#00e0ff" : "#555577"
+                        icon.source: todoListModel.pinnedIndex === sourceIndex ? "qrc:/qt/qml/FocusForgeApp/assets/icons/pin.svg" : "qrc:/qt/qml/FocusForgeApp/assets/icons/pin-off.svg"
+                        icon.color: todoListModel.pinnedIndex === sourceIndex ? "#00e0ff" : "#555577"
                         icon.width: 14
                         icon.height: 14
                         Layout.preferredWidth: 28
                         Layout.preferredHeight: 28
                         background: Rectangle { color: "transparent" }
-                        opacity: todoListModel.pinnedIndex === index ? 1.0 : (pinBtn.hovered ? 0.7 : 0.0)
+                        opacity: todoListModel.pinnedIndex === sourceIndex ? 1.0 : (pinBtn.hovered ? 0.7 : 0.0)
 
                         onClicked: {
-                            if (todoListModel.pinnedIndex === index) {
+                            if (todoListModel.pinnedIndex === sourceIndex) {
                                 todoListModel.unpinTask()
                             } else {
-                                todoListModel.pinTask(index)
+                                todoListModel.pinTask(sourceIndex)
                             }
                         }
 
@@ -158,10 +204,8 @@ Rectangle {
 
                         MouseArea {
                             anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                audioController.playClickSound()
-                                todoListModel.toggleTask(index)
+                                todoListModel.toggleTask(sourceIndex)
                                 clickAnim.start()
                             }
                         }
@@ -183,7 +227,7 @@ Rectangle {
 
                             onEditingFinished: {
                                 if (text.trim() !== display) {
-                                    todoListModel.updateTaskWithNLP(index, text.trim())
+                                    todoListModel.updateTaskWithNLP(sourceIndex, text.trim())
                                 }
                             }
 
@@ -244,7 +288,7 @@ Rectangle {
                         opacity: delBtn.hovered ? 1.0 : 0.0
                         
                         onClicked: {
-                            todoListModel.deleteTask(index)
+                            todoListModel.deleteTask(sourceIndex)
                             root.showUndoToast = true
                             undoTimer.restart()
                         }
@@ -258,7 +302,7 @@ Rectangle {
                     anchors.fill: parent
                     color: "#0affffff"
                     radius: 8
-                    visible: mouseArea.containsMouse && !taskTextField.activeFocus && root.confirmingIndex !== index
+                    visible: mouseArea.containsMouse && !taskTextField.activeFocus && root.confirmingIndex !== sourceIndex
                 }
 
                 MouseArea {
@@ -272,6 +316,7 @@ Rectangle {
                 }
             }
         }
+    }
     }
 
     // ── Undo Toast ──

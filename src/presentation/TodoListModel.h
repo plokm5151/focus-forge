@@ -4,6 +4,7 @@
 #include <QStringList>
 #include <vector>
 #include <memory>
+#include <QSortFilterProxyModel>
 
 namespace brain::infrastructure {
     class ObsidianSync;
@@ -79,6 +80,38 @@ private:
     TodoItem m_lastDeletedItem;
     int m_lastDeletedIndex{-1};
     bool m_canUndo{false};
+};
+
+class ActiveTaskFilterModel : public QSortFilterProxyModel {
+    Q_OBJECT
+public:
+    explicit ActiveTaskFilterModel(QObject* parent = nullptr) : QSortFilterProxyModel(parent) {
+        setDynamicSortFilter(true);
+    }
+    Q_INVOKABLE int mapRowToSource(int proxyRow) const {
+        return mapToSource(index(proxyRow, 0)).row();
+    }
+protected:
+    bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override {
+        QModelIndex index = sourceModel()->index(source_row, 0, source_parent);
+        return !sourceModel()->data(index, TodoListModel::IsCompletedRole).toBool();
+    }
+};
+
+class HistoryTaskFilterModel : public QSortFilterProxyModel {
+    Q_OBJECT
+public:
+    explicit HistoryTaskFilterModel(QObject* parent = nullptr) : QSortFilterProxyModel(parent) {
+        setDynamicSortFilter(true);
+    }
+    Q_INVOKABLE int mapRowToSource(int proxyRow) const {
+        return mapToSource(index(proxyRow, 0)).row();
+    }
+protected:
+    bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override {
+        QModelIndex index = sourceModel()->index(source_row, 0, source_parent);
+        return sourceModel()->data(index, TodoListModel::IsCompletedRole).toBool();
+    }
 };
 
 } // namespace brain::presentation

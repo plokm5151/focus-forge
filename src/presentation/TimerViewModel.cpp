@@ -89,7 +89,7 @@ auto TimerViewModel::overtimeSeconds() const noexcept -> int {
 }
 
 auto TimerViewModel::totalPoints() const noexcept -> int {
-    return AppConfig::instance().totalPoints();
+    return AppConfig::instance().totalPoints() + m_currentSessionPoints;
 }
 
 auto TimerViewModel::currentSessionPoints() const noexcept -> int {
@@ -179,10 +179,10 @@ void TimerViewModel::stopFocus() {
     m_tickTimer->stop();
     m_isOvertime = false;
     m_overtimeSeconds = 0;
-    m_currentSessionPoints = 0;
+    
+    commitSessionPoints();
+
     emit isOvertimeChanged(false);
-    emit overtimeSecondsChanged(0);
-    emit currentSessionPointsChanged(0);
     m_remainingSeconds = m_focusDurationMinutes * 60;
     emit remainingSecondsChanged(m_remainingSeconds);
     setState(TimerState::Idle);
@@ -227,12 +227,14 @@ void TimerViewModel::submitSessionReview(const QString& text) {
 
     // Build the log entry
     QString logEntry;
+    QString dateStr = m_focusStartTime.toString("yyyy-MM-dd");
+    
     if (text.trimmed().isEmpty()) {
-        logEntry = QString("**[%1 - %2 (%3m)]** (No review provided)")
-                       .arg(startStr, endStr, QString::number(elapsedMins));
+        logEntry = QString("%1 [TW %2 - %3 (%4m)]: (No review provided)")
+                       .arg(dateStr, startStr, endStr, QString::number(elapsedMins));
     } else {
-        logEntry = QString("**[%1 - %2 (%3m)]** %4")
-                       .arg(startStr, endStr, QString::number(elapsedMins), text.trimmed());
+        logEntry = QString("%1 [TW %2 - %3 (%4m)]: %5")
+                       .arg(dateStr, startStr, endStr, QString::number(elapsedMins), text.trimmed());
     }
 
     static_cast<void>(m_noteSync->syncText(logEntry.toStdString()));
@@ -245,6 +247,9 @@ void TimerViewModel::submitSessionReview(const QString& text) {
     // Now transition to CoolDown
     m_isOvertime = false;
     m_overtimeSeconds = 0;
+    
+    commitSessionPoints();
+
     emit isOvertimeChanged(false);
     emit overtimeSecondsChanged(0);
 
@@ -364,9 +369,8 @@ void TimerViewModel::onTimerTick() {
         else pts = 50;
 
         m_currentSessionPoints += pts;
-        AppConfig::instance().setTotalPoints(AppConfig::instance().totalPoints() + pts);
         emit currentSessionPointsChanged(m_currentSessionPoints);
-        emit totalPointsChanged(AppConfig::instance().totalPoints());
+        emit totalPointsChanged(totalPoints());
         emit pointsEarned(pts);
     }
 
@@ -376,9 +380,8 @@ void TimerViewModel::onTimerTick() {
         if (m_state == TimerState::Focusing && m_focusDurationMinutes >= 40) {
             int pts = 1000;
             m_currentSessionPoints += pts;
-            AppConfig::instance().setTotalPoints(AppConfig::instance().totalPoints() + pts);
             emit currentSessionPointsChanged(m_currentSessionPoints);
-            emit totalPointsChanged(AppConfig::instance().totalPoints());
+            emit totalPointsChanged(totalPoints());
             emit pointsEarned(pts);
         }
 
@@ -436,6 +439,15 @@ void TimerViewModel::setState(TimerState newState) {
 auto TimerViewModel::taiwanTimeString() const -> std::string {
     QDateTime tw = QDateTime::currentDateTimeUtc().toTimeZone(QTimeZone("Asia/Taipei"));
     return tw.toString("yyyy-MM-ddTHH:mm:ss").toStdString();
+}
+
+void TimerViewModel::commitSessionPoints() {
+    if (m_currentSessionPoints > 0) {
+        AppConfig::instance().setTotalPoints(AppConfig::instance().totalPoints() + m_currentSessionPoints);
+        m_currentSessionPoints = 0;
+        emit currentSessionPointsChanged(0);
+        emit totalPointsChanged(totalPoints());
+    }
 }
 
 } // namespace brain::presentation

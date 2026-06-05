@@ -173,6 +173,7 @@ private:
     void setState(brain::domain::TimerState newState);
     /** @brief Get the current Taiwan time string in ISO format. */
     [[nodiscard]] auto taiwanTimeString() const -> std::string;
+    void commitSessionPoints();
 
     brain::domain::TimerState                   m_state;
     int                                         m_remainingSeconds;
