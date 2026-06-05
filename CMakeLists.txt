@@ -89,6 +89,7 @@ set(QML_RESOURCES
     qml/components/BreathingOrb.qml
     qml/components/QuickCapturePopup.qml
     qml/components/TodoListPanel.qml
+    qml/components/SessionReviewPopup.qml
 )
 
 # ============================================================================

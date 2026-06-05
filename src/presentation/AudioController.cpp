@@ -23,6 +23,9 @@ AudioController::AudioController(QObject* parent)
     , m_bgOutput{new QAudioOutput{this}}
     , m_bellPlayer{new QMediaPlayer{this}}
     , m_bellOutput{new QAudioOutput{this}}
+    , m_clickPlayer{new QMediaPlayer{this}}
+    , m_clickOutput{new QAudioOutput{this}}
+    , m_fadeTimer{new QTimer{this}}
 {
     // Setup background looping audio
     m_bgPlayer->setAudioOutput(m_bgOutput);
@@ -30,6 +33,9 @@ AudioController::AudioController(QObject* parent)
     
     // Setup bell audio
     m_bellPlayer->setAudioOutput(m_bellOutput);
+
+    // Setup click audio
+    m_clickPlayer->setAudioOutput(m_clickOutput);
     
 #ifdef Q_OS_MAC
     QString audioDir = QCoreApplication::applicationDirPath() + "/../Resources/assets/audio/";
@@ -38,10 +44,31 @@ AudioController::AudioController(QObject* parent)
 #endif
 
     m_bellPlayer->setSource(QUrl::fromLocalFile(audioDir + "bell.wav"));
+    m_clickPlayer->setSource(QUrl::fromLocalFile(audioDir + "click.wav"));
     
-    // Default volume (can be configured via AppConfig in the future)
+    // Default volume
     m_bgOutput->setVolume(0.5f);
     m_bellOutput->setVolume(1.0f);
+    m_clickOutput->setVolume(0.8f);
+
+    // Crossfade timer: fires every 50ms for smooth 2-second fade
+    m_fadeTimer->setInterval(50);
+    connect(m_fadeTimer, &QTimer::timeout, this, [this]() {
+        // Fade out current
+        m_fadeCurrentVolume -= 0.025f; // 0.5 / 20 steps = 0.025 per step (1 second fade out)
+        if (m_fadeCurrentVolume <= 0.0f) {
+            m_fadeCurrentVolume = 0.0f;
+            m_fadeTimer->stop();
+
+            // Switch source and fade in
+            m_bgPlayer->stop();
+            m_bgPlayer->setSource(QUrl::fromLocalFile(m_pendingSource));
+            m_bgPlayer->play();
+            m_bgOutput->setVolume(m_volume);
+            m_pendingSource.clear();
+        }
+        m_bgOutput->setVolume(m_fadeCurrentVolume);
+    });
 
     connect(m_bellPlayer, &QMediaPlayer::errorOccurred, this, [](QMediaPlayer::Error error, const QString &errorString) {
         qDebug() << "Bell Player Error:" << error << errorString;
@@ -61,6 +88,7 @@ void AudioController::setMuted(bool muted) {
     m_isMuted = muted;
     m_bgOutput->setMuted(m_isMuted);
     m_bellOutput->setMuted(m_isMuted);
+    m_clickOutput->setMuted(m_isMuted);
     emit isMutedChanged(m_isMuted);
 }
 
@@ -80,11 +108,23 @@ void AudioController::setVolume(float volume) {
     emit volumeChanged(m_volume);
 }
 
+void AudioController::playClickSound() {
+    m_clickPlayer->stop();
+    m_clickPlayer->setPosition(0);
+    m_clickPlayer->play();
+}
+
+void AudioController::crossfadeTo(const QString& newSource) {
+    m_pendingSource = newSource;
+    m_fadeCurrentVolume = m_volume;
+    m_fadeTimer->start();
+}
+
 void AudioController::onTimerStateChanged(TimerState newState, TimerState oldState) {
     qDebug() << "Audio Transition - Old:" << static_cast<int>(oldState) << "New:" << static_cast<int>(newState);
     
-    // Play the bell ONLY when an automated session completes (Focusing -> CoolDown, or CoolDown -> Idle)
-    bool isSessionComplete = (oldState == TimerState::Focusing && newState == TimerState::CoolDown) ||
+    // Play the bell when a focus session completes or when cooldown completes
+    bool isSessionComplete = (oldState == TimerState::Focusing && newState == TimerState::Overtime) ||
                              (oldState == TimerState::CoolDown && newState == TimerState::Idle);
 
     if (isSessionComplete) {
@@ -104,9 +144,17 @@ void AudioController::onTimerStateChanged(TimerState newState, TimerState oldSta
             m_bgPlayer->setSource(QUrl::fromLocalFile(audioDir + "focus.mp3"));
         }
         m_bgPlayer->play();
+    } else if (newState == TimerState::Overtime) {
+        // Keep focus music playing during overtime (flow state)
+        // No change needed, music continues
     } else if (newState == TimerState::CoolDown) {
-        m_bgPlayer->setSource(QUrl::fromLocalFile(audioDir + "cooldown.mp3"));
-        m_bgPlayer->play();
+        // Crossfade from focus to cooldown music
+        if (oldState == TimerState::Focusing || oldState == TimerState::Overtime) {
+            crossfadeTo(audioDir + "cooldown.mp3");
+        } else {
+            m_bgPlayer->setSource(QUrl::fromLocalFile(audioDir + "cooldown.mp3"));
+            m_bgPlayer->play();
+        }
     } else if (newState == TimerState::Paused) {
         m_bgPlayer->pause();
     } else if (newState == TimerState::Idle) {

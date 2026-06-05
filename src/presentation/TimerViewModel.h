@@ -19,6 +19,7 @@
 #include <QObject>
 #include <QString>
 #include <QTimer>
+#include <QDateTime>
 
 #include <memory>
 
@@ -27,86 +28,44 @@ namespace brain::presentation {
 /**
  * @class TimerViewModel
  * @brief ViewModel implementing MVVM for the configurable focus timer.
- *
- * Owns the timer state machine and exposes it to QML through Q_PROPERTY
- * bindings. Durations are read from AppConfig, enabling runtime and
- * persistent configuration. Dependencies (e.g., note sync strategy) are
- * injected via constructor.
- *
- * @par State Machine
- * @verbatim
- *   Idle ──[startFocus()]──▶ Focusing ──[timer=0]──▶ CoolDown ──[timer=0]──▶ Idle
- * @endverbatim
- *
- * @par Configuration
- * - Focus duration: `AppConfig::focusDurationMinutes()` (default 40 min)
- * - CoolDown duration: `AppConfig::coolDownDurationMinutes()` (default 10 min)
- *
- * @par Thread Safety
- * Must be used exclusively from the Qt main thread (GUI thread).
- *
- * @see brain::domain::INoteSync
- * @see brain::domain::TimerState
- * @see brain::infrastructure::AppConfig
  */
 class TimerViewModel : public QObject {
     Q_OBJECT
 
-    /**
-     * @property remainingSeconds
-     * @brief Seconds remaining in the current session (focus or cooldown).
-     */
     Q_PROPERTY(int remainingSeconds
                READ remainingSeconds
                NOTIFY remainingSecondsChanged)
 
-    /**
-     * @property currentStateName
-     * @brief Human-readable name of the current timer state.
-     *
-     * Possible values: "Idle", "Focusing", "CoolDown".
-     */
     Q_PROPERTY(QString currentStateName
                READ currentStateName
                NOTIFY currentStateNameChanged)
 
-    /**
-     * @property focusDurationMinutes
-     * @brief Configurable focus session duration in minutes.
-     *
-     * Read from AppConfig on initialization. Can be modified at runtime
-     * via QML or programmatically; changes are persisted to config.json.
-     */
     Q_PROPERTY(int focusDurationMinutes
                READ focusDurationMinutes
                WRITE setFocusDurationMinutes
                NOTIFY focusDurationMinutesChanged)
 
-    /**
-     * @property coolDownDurationMinutes
-     * @brief Configurable cooldown (break) duration in minutes.
-     *
-     * Read from AppConfig on initialization. Can be modified at runtime
-     * via QML or programmatically; changes are persisted to config.json.
-     */
     Q_PROPERTY(int coolDownDurationMinutes
                READ coolDownDurationMinutes
                WRITE setCoolDownDurationMinutes
                NOTIFY coolDownDurationMinutesChanged)
 
+    /** @brief Number of completed focus sessions today. */
+    Q_PROPERTY(int sessionsCompletedToday
+               READ sessionsCompletedToday
+               NOTIFY sessionsCompletedTodayChanged)
+
+    /** @brief Whether the timer is in overtime (flow state). */
+    Q_PROPERTY(bool isOvertime
+               READ isOvertime
+               NOTIFY isOvertimeChanged)
+
+    /** @brief Elapsed overtime seconds (counts up from 0). */
+    Q_PROPERTY(int overtimeSeconds
+               READ overtimeSeconds
+               NOTIFY overtimeSecondsChanged)
+
 public:
-    /**
-     * @brief Constructs the ViewModel with an injected sync dependency.
-     *
-     * Reads initial durations from AppConfig. Sets remainingSeconds to
-     * focusDurationMinutes * 60.
-     *
-     * @param noteSync Shared pointer to a concrete INoteSync implementation.
-     *                 Must not be null.
-     * @param parent   Optional QObject parent for Qt's ownership tree.
-     *
-     * @throws std::invalid_argument if noteSync is null.
-     */
     explicit TimerViewModel(std::shared_ptr<brain::domain::INoteSync> noteSync,
                             QObject* parent = nullptr);
 
@@ -119,64 +78,43 @@ public:
     [[nodiscard]] auto timerState() const noexcept -> brain::domain::TimerState;
     [[nodiscard]] auto focusDurationMinutes() const noexcept -> int;
     [[nodiscard]] auto coolDownDurationMinutes() const noexcept -> int;
+    [[nodiscard]] auto sessionsCompletedToday() const noexcept -> int;
+    [[nodiscard]] auto isOvertime() const noexcept -> bool;
+    [[nodiscard]] auto overtimeSeconds() const noexcept -> int;
 
     // --- Property Mutators ---
 
-    /**
-     * @brief Sets focus duration and persists to AppConfig.
-     * @param minutes Duration in minutes. Must be > 0.
-     */
     void setFocusDurationMinutes(int minutes);
-
-    /**
-     * @brief Sets cooldown duration and persists to AppConfig.
-     * @param minutes Duration in minutes. Must be > 0.
-     */
     void setCoolDownDurationMinutes(int minutes);
 
     // --- Q_INVOKABLE Commands (Called from QML) ---
 
-    /**
-     * @brief Starts a new focus session.
-     *
-     * Resets the countdown to focusDurationMinutes * 60 and transitions
-     * to the Focusing state. No-op if already Focusing.
-     */
     Q_INVOKABLE void startFocus();
-
-    /**
-     * @brief Pauses the currently running focus session.
-     *
-     * Stops the countdown timer. No-op if not in Focusing state.
-     */
     Q_INVOKABLE void pauseFocus();
-
-    /**
-     * @brief Stops the current session and resets the timer to Idle.
-     */
     Q_INVOKABLE void stopFocus();
-
-    /**
-     * @brief Submits a new task to the note sync strategy.
-     * @param text The task description.
-     */
     Q_INVOKABLE void submitTodo(const QString& text);
-
-    /**
-     * @brief Submits a new task with metadata to the note sync strategy.
-     */
     Q_INVOKABLE void submitTodoWithMetadata(const QString& text, int priority, const QString& dueDate);
+
+    /** @brief Start cooldown directly (skip focus). */
+    Q_INVOKABLE void startCoolDown();
+
+    /** @brief Finish early: end focus and go to cooldown (triggers review). */
+    Q_INVOKABLE void finishFocusEarly();
+
+    /** @brief Submit session review text and transition to CoolDown. */
+    Q_INVOKABLE void submitSessionReview(const QString& text);
+
+    /** @brief Adjust remaining time by delta minutes (e.g., +5 or -5). */
+    Q_INVOKABLE void adjustTime(int deltaMinutes);
+
+    /** @brief Pause cooldown. */
+    Q_INVOKABLE void pauseCoolDown();
+
+    /** @brief Resume cooldown. */
+    Q_INVOKABLE void resumeCoolDown();
 
     // --- Test Support ---
 
-    /**
-     * @brief Sets remaining seconds directly (for testing only).
-     *
-     * Allows tests to inject a short duration to avoid waiting the full
-     * configured duration. Must be called before startFocus().
-     *
-     * @param seconds The number of seconds to set.
-     */
     void setRemainingSecondsForTesting(int seconds);
 
 signals:
@@ -184,37 +122,30 @@ signals:
     void currentStateNameChanged(const QString& stateName);
     void focusDurationMinutesChanged(int minutes);
     void coolDownDurationMinutesChanged(int minutes);
+    void sessionsCompletedTodayChanged(int count);
+    void isOvertimeChanged(bool overtime);
+    void overtimeSecondsChanged(int seconds);
 
-    /**
-     * @brief Emitted when a focus session completes (Focusing → CoolDown).
-     */
+    /** @brief Emitted when a focus session completes (Focusing → Overtime/CoolDown). */
     void focusSessionCompleted();
 
-    /**
-     * @brief Emitted when the cooldown period completes (CoolDown → Idle).
-     */
+    /** @brief Emitted when the cooldown period completes (CoolDown → Idle). */
     void coolDownCompleted();
 
-    /**
-     * @brief Emitted when the timer state machine transitions.
-     * @param newState The new TimerState.
-     * @param oldState The previous TimerState.
-     */
+    /** @brief Emitted when the timer state machine transitions. */
     void timerStateChanged(brain::domain::TimerState newState, brain::domain::TimerState oldState);
 
+    /** @brief Emitted when a session review is needed (user should see the review popup). */
+    void sessionReviewRequested();
+
 private slots:
-    /**
-     * @brief Handles each tick of the internal QTimer.
-     *
-     * Decrements remaining seconds. On reaching zero:
-     * - In Focusing: syncs, transitions to CoolDown, starts cooldown timer.
-     * - In CoolDown: transitions to Idle, resets to focus duration.
-     */
     void onTimerTick();
 
 private:
     [[nodiscard]] static auto stateToString(brain::domain::TimerState state) -> QString;
     void setState(brain::domain::TimerState newState);
+    /** @brief Get the current Taiwan time string in ISO format. */
+    [[nodiscard]] auto taiwanTimeString() const -> std::string;
 
     brain::domain::TimerState                   m_state;
     int                                         m_remainingSeconds;
@@ -223,6 +154,13 @@ private:
     QTimer*                                     m_tickTimer;    ///< Parented to `this` (RAII).
     std::shared_ptr<brain::domain::INoteSync>   m_noteSync;
     bool                                        m_testOverride;
+
+    // --- New fields for 24-point UX overhaul ---
+    int                                         m_sessionsCompletedToday{0};
+    bool                                        m_isOvertime{false};
+    int                                         m_overtimeSeconds{0};
+    QDateTime                                   m_focusStartTime;  ///< When the current focus started (Taiwan time).
+    bool                                        m_pausedDuringCoolDown{false};
 };
 
 } // namespace brain::presentation

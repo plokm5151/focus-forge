@@ -1,14 +1,10 @@
 /**
  * @file BreathingOrb.qml
- * @brief Futuristic neon orb component driven by a GPU fragment shader.
+ * @brief Battery-friendly breathing orb using pure QML circles.
  *
- * Renders a glowing cyan/purple orb that:
- * - Pulsates smoothly during Idle and CoolDown states
- * - Locks into a steady, intense glow during Focusing
- * - Transitions between modes with smooth easing
- *
- * All visual computation is GPU-side (zero CPU rendering load).
- * The only CPU cost is a lightweight NumberAnimation incrementing iTime.
+ * Replaces the GPU-heavy Fragment Shader with layered QML Rectangles
+ * using radius, scale, and opacity animations. Visually equivalent
+ * but with near-zero power consumption.
  */
 import QtQuick
 
@@ -16,66 +12,125 @@ Item {
     id: root
 
     // ── Public Interface (bound from parent / ViewModel) ──
-
-    /** @brief Current timer state name from TimerViewModel ("Idle", "Focusing", "CoolDown"). */
     property string stateName: "Idle"
-
-    /** @brief Remaining seconds from TimerViewModel (used for future progress mapping). */
     property int remainingSeconds: 0
 
-    // ── Derived Animation Parameters ──
-
-    /** @brief Pulse speed: 0 = steady (Focusing), 2.0 = breathing (Idle/CoolDown). */
-    readonly property real effectivePulseSpeed: {
+    // ── Derived Colors ──
+    readonly property color orbColor: {
         switch (stateName) {
-        case "Focusing": return 0.0;
-        case "CoolDown": return 2.5;
-        default:         return 1.8;  // Idle — gentle breathing
+        case "Focusing": return "#00e0ff";
+        case "Overtime": return "#ff8c00";
+        case "CoolDown": return "#a855f7";
+        default:         return "#3366aa";
         }
     }
 
-    /** @brief Glow intensity: brighter during Focusing, dimmer when Idle. */
-    readonly property real effectiveGlowIntensity: {
+    readonly property real breathSpeed: {
         switch (stateName) {
-        case "Focusing": return 1.0;
-        case "CoolDown": return 0.75;
-        default:         return 0.55;  // Idle — subdued
+        case "Focusing": return 4000;   // Slow, steady breath
+        case "Overtime": return 2000;   // Faster, urgent
+        case "CoolDown": return 5000;   // Very slow, relaxed
+        default:         return 3500;   // Idle — gentle
         }
     }
 
-    // ── Time Accumulator (drives shader animation, zero CPU render cost) ──
-
-    /** @brief Monotonically increasing time counter for shader input. */
-    property real iTime: 0.0
-
-    NumberAnimation on iTime {
-        from: 0
-        to: 36000        // 10-hour cycle before wrap (avoids precision issues)
-        duration: 36000000  // 10 hours in ms — linear 1:1 second mapping
-        loops: Animation.Infinite
-        running: true
-    }
-
-    // ── Shader Rendering ──
-
-    ShaderEffect {
-        id: orbShader
+    // ── Interactive: Click to toggle play/pause ──
+    MouseArea {
         anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onClicked: {
+            if (timerViewModel.currentStateName === "Focusing" ||
+                timerViewModel.currentStateName === "Overtime") {
+                timerViewModel.pauseFocus();
+            } else if (timerViewModel.currentStateName === "Paused") {
+                timerViewModel.startFocus();
+            }
+        }
+    }
 
-        // Uniforms passed to the fragment shader (names must match UBO members)
-        property real iTime: root.iTime
-        property real pulseSpeed: root.effectivePulseSpeed
-        property real glowIntensity: root.effectiveGlowIntensity
+    // ── Layer 1: Outer Glow (largest, most transparent) ──
+    Rectangle {
+        id: outerGlow
+        anchors.centerIn: parent
+        width: root.width * 0.95
+        height: width
+        radius: width / 2
+        color: "transparent"
+        border.width: 2
+        border.color: root.orbColor
+        opacity: 0.15
 
-        fragmentShader: "qrc:/shaders/shaders/breathing_orb.frag.qsb"
-
-        // Smooth transitions when state changes
-        Behavior on pulseSpeed {
-            NumberAnimation { duration: 1000; easing.type: Easing.InOutQuad }
+        SequentialAnimation on scale {
+            loops: Animation.Infinite
+            NumberAnimation { from: 0.85; to: 1.15; duration: root.breathSpeed; easing.type: Easing.InOutSine }
+            NumberAnimation { from: 1.15; to: 0.85; duration: root.breathSpeed; easing.type: Easing.InOutSine }
         }
 
-        Behavior on glowIntensity {
-            NumberAnimation { duration: 800; easing.type: Easing.InOutSine }
+        Behavior on border.color { ColorAnimation { duration: 800 } }
+    }
+
+    // ── Layer 2: Middle Ring ──
+    Rectangle {
+        id: middleRing
+        anchors.centerIn: parent
+        width: root.width * 0.7
+        height: width
+        radius: width / 2
+        color: "transparent"
+        border.width: 3
+        border.color: root.orbColor
+        opacity: 0.25
+
+        SequentialAnimation on scale {
+            loops: Animation.Infinite
+            NumberAnimation { from: 0.9; to: 1.1; duration: root.breathSpeed * 0.9; easing.type: Easing.InOutSine }
+            NumberAnimation { from: 1.1; to: 0.9; duration: root.breathSpeed * 0.9; easing.type: Easing.InOutSine }
         }
+
+        Behavior on border.color { ColorAnimation { duration: 800 } }
+    }
+
+    // ── Layer 3: Inner Glow Core ──
+    Rectangle {
+        id: innerCore
+        anchors.centerIn: parent
+        width: root.width * 0.45
+        height: width
+        radius: width / 2
+
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: Qt.rgba(root.orbColor.r, root.orbColor.g, root.orbColor.b, 0.35) }
+            GradientStop { position: 1.0; color: Qt.rgba(root.orbColor.r, root.orbColor.g, root.orbColor.b, 0.05) }
+        }
+
+        SequentialAnimation on scale {
+            loops: Animation.Infinite
+            NumberAnimation { from: 0.95; to: 1.08; duration: root.breathSpeed * 0.8; easing.type: Easing.InOutQuad }
+            NumberAnimation { from: 1.08; to: 0.95; duration: root.breathSpeed * 0.8; easing.type: Easing.InOutQuad }
+        }
+
+        SequentialAnimation on opacity {
+            loops: Animation.Infinite
+            NumberAnimation { from: 0.4; to: 0.8; duration: root.breathSpeed; easing.type: Easing.InOutSine }
+            NumberAnimation { from: 0.8; to: 0.4; duration: root.breathSpeed; easing.type: Easing.InOutSine }
+        }
+    }
+
+    // ── Layer 4: Tiny Bright Center Dot ──
+    Rectangle {
+        anchors.centerIn: parent
+        width: root.width * 0.12
+        height: width
+        radius: width / 2
+        color: root.orbColor
+        opacity: 0.6
+
+        SequentialAnimation on opacity {
+            loops: Animation.Infinite
+            NumberAnimation { from: 0.4; to: 0.9; duration: root.breathSpeed * 0.7; easing.type: Easing.InOutSine }
+            NumberAnimation { from: 0.9; to: 0.4; duration: root.breathSpeed * 0.7; easing.type: Easing.InOutSine }
+        }
+
+        Behavior on color { ColorAnimation { duration: 800 } }
     }
 }

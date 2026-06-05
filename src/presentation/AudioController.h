@@ -6,6 +6,7 @@
  * It manages two distinct types of audio:
  * - Looping background ambients (QMediaPlayer) for focus and cooldown.
  * - Zero-latency one-shot sound effects (QSoundEffect) for the transition bell.
+ * - Click sound effect for task completion.
  *
  * It listens to timer state transitions from the TimerViewModel.
  *
@@ -21,6 +22,7 @@
 #include <QObject>
 #include <QMediaPlayer>
 #include <QAudioOutput>
+#include <QTimer>
 
 namespace brain::presentation {
 
@@ -57,6 +59,9 @@ public:
 
     Q_INVOKABLE void toggleMute();
 
+    /** @brief Play a crisp click sound effect for task completion. */
+    Q_INVOKABLE void playClickSound();
+
 public slots:
     /**
      * @brief Slot triggered when the timer state transitions.
@@ -70,11 +75,23 @@ signals:
     void volumeChanged(float volume);
 
 private:
+    /** @brief Perform a 2-second audio crossfade from current to new source. */
+    void crossfadeTo(const QString& newSource);
+
     QMediaPlayer* m_bgPlayer;
     QAudioOutput* m_bgOutput;
     
     QMediaPlayer* m_bellPlayer;
     QAudioOutput* m_bellOutput;
+
+    QMediaPlayer* m_clickPlayer;
+    QAudioOutput* m_clickOutput;
+
+    // Crossfade support
+    QTimer*       m_fadeTimer;
+    float         m_fadeTargetVolume{0.5f};
+    float         m_fadeCurrentVolume{0.5f};
+    QString       m_pendingSource;
 
     bool m_isMuted{false};       ///< Tracks the mute state.
     float m_volume{0.5f};        ///< Tracks the background volume level.

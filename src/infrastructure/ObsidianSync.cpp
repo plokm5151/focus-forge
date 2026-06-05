@@ -8,6 +8,8 @@
 
 #include "ObsidianSync.h"
 
+#include <QDateTime>
+#include <QTimeZone>
 #include <chrono>
 #include <filesystem>
 #include <format>
@@ -59,17 +61,12 @@ auto ObsidianSync::syncText(std::string_view text) -> bool {
         return false;
     }
 
-    // Generate ISO 8601 timestamp
-    const auto now = std::chrono::system_clock::now();
-    const auto timeT = std::chrono::system_clock::to_time_t(now);
-    const std::tm* localTime = std::localtime(&timeT);
-
-    char timestamp[64]{};
-    std::strftime(timestamp, sizeof(timestamp),
-                  "%Y-%m-%dT%H:%M:%S", localTime);
+    // Generate ISO 8601 timestamp in Taiwan timezone (UTC+8)
+    QDateTime twTime = QDateTime::currentDateTimeUtc().toTimeZone(QTimeZone("Asia/Taipei"));
+    std::string timestamp = twTime.toString("yyyy-MM-ddTHH:mm:ss").toStdString();
 
     // Write timestamped markdown entry
-    ofs << "- **[" << timestamp << "]** " << text << '\n';
+    ofs << "- " << text << '\n';
     ofs.flush();
 
     if (ofs.fail()) {

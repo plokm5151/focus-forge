@@ -1,3 +1,8 @@
+/**
+ * @file TodoListPanel.qml
+ * @brief Focus Tasks panel with inline confirmation, auto-scroll,
+ *        pin-to-focus, empty state guide, and undo toast.
+ */
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,6 +13,22 @@ Rectangle {
     radius: 12
     border.width: 1
     border.color: "#ffffff1a"
+
+    // Track which task is in "confirm" mode
+    property int confirmingIndex: -1
+
+    // Undo toast state
+    property bool showUndoToast: false
+
+    // Dynamic height: min 80, grows with content, max 5 items
+    readonly property int itemHeight: 44
+    readonly property int maxVisibleItems: 5
+    readonly property int headerHeight: 40
+    readonly property int panelPadding: 32
+    implicitHeight: {
+        let contentH = headerHeight + panelPadding + Math.min(todoListModel.rowCount(), maxVisibleItems) * (itemHeight + 8)
+        return Math.max(80, contentH)
+    }
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,37 +44,99 @@ Rectangle {
             Layout.bottomMargin: 8
         }
 
+        // ── Empty State Guide ──
+        Text {
+            visible: todoListModel.rowCount() === 0
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            text: qsTr("任務已清空\n按下 Cmd+T 捕捉下一個靈感 💡")
+            font.pixelSize: 14
+            font.family: "Inter, Segoe UI, sans-serif"
+            color: "#555577"
+            opacity: 0.7
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            wrapMode: Text.WordWrap
+        }
+
         ListView {
             id: listView
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
             spacing: 8
+            visible: todoListModel.rowCount() > 0
             
-            // This references the C++ model exposed to QML via main.cpp
             model: todoListModel
 
+            // Custom scrollbar that appears only when needed
+            ScrollBar.vertical: ScrollBar {
+                policy: listView.contentHeight > listView.height ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
+                width: 4
+
+                contentItem: Rectangle {
+                    implicitWidth: 4
+                    radius: 2
+                    color: "#ffffff33"
+                    opacity: parent.active ? 1.0 : 0.0
+                    Behavior on opacity { NumberAnimation { duration: 300 } }
+                }
+            }
+
             delegate: Rectangle {
+                id: delegateRoot
                 width: listView.width
-                height: 40
-                color: "#00000000" // Transparent
+                height: root.itemHeight
+                color: root.confirmingIndex === index ? "#00e0ff15" : "#00000000"
                 radius: 8
+                border.width: root.confirmingIndex === index ? 1 : 0
+                border.color: "#00e0ff44"
+
+                Behavior on color { ColorAnimation { duration: 200 } }
+                Behavior on border.width { NumberAnimation { duration: 200 } }
 
                 RowLayout {
                     anchors.fill: parent
                     anchors.margins: 4
-                    spacing: 12
+                    spacing: 8
 
-                    CheckBox {
-                        id: taskCheck
-                        checked: isCompleted // from role IsCompletedRole
-                        
+                    // Pin Button (visible on hover)
+                    Button {
+                        id: pinBtn
+                        text: todoListModel.pinnedIndex === index ? "📌" : "📍"
+                        font.pixelSize: 12
+                        Layout.preferredWidth: 28
+                        Layout.preferredHeight: 28
+                        background: Rectangle { color: "transparent" }
+                        opacity: todoListModel.pinnedIndex === index ? 1.0 : (pinBtn.hovered ? 0.7 : 0.0)
+
                         onClicked: {
-                            // Call Q_INVOKABLE toggleTask
-                            todoListModel.toggleTask(index);
+                            if (todoListModel.pinnedIndex === index) {
+                                todoListModel.unpinTask()
+                            } else {
+                                todoListModel.pinTask(index)
+                            }
                         }
 
-                        // Glassmorphic CheckBox indicator
+                        Behavior on opacity { NumberAnimation { duration: 150 } }
+                    }
+
+                    // CheckBox
+                    CheckBox {
+                        id: taskCheck
+                        checked: isCompleted
+
+                        onClicked: {
+                            if (isCompleted) {
+                                // If already completed, allow unchecking directly
+                                todoListModel.toggleTask(index)
+                            } else {
+                                // Trigger inline confirmation mode
+                                root.confirmingIndex = index
+                                confirmText.forceActiveFocus()
+                            }
+                        }
+
                         indicator: Rectangle {
                             implicitWidth: 20
                             implicitHeight: 20
@@ -62,6 +145,9 @@ Rectangle {
                             radius: 4
                             color: taskCheck.checked ? "#6d28d9" : "#ffffff10"
                             border.color: taskCheck.checked ? "#a855f7" : "#ffffff40"
+
+                            // Completion glow effect
+                            scale: 1.0
 
                             Text {
                                 text: "✔"
@@ -75,27 +161,62 @@ Rectangle {
                         }
                     }
 
-                    TextField {
-                        id: taskTextField
+                    // Task Text / Confirm Prompt
+                    Item {
                         Layout.fillWidth: true
-                        text: display // from role DisplayRole
-                        font.pixelSize: 14
-                        font.family: "Inter, Segoe UI, sans-serif"
-                        color: taskCheck.checked ? "#8888aa" : "#ffffff"
-                        font.strikeout: taskCheck.checked
-                        verticalAlignment: TextInput.AlignVCenter
-                        background: Rectangle { color: "transparent" }
+                        Layout.fillHeight: true
 
-                        // Allow editing
-                        readOnly: taskCheck.checked
+                        // Normal mode: editable text field
+                        TextField {
+                            id: taskTextField
+                            anchors.fill: parent
+                            visible: root.confirmingIndex !== index
+                            text: display
+                            font.pixelSize: 14
+                            font.family: "Inter, Segoe UI, sans-serif"
+                            color: taskCheck.checked ? "#8888aa" : "#ffffff"
+                            font.strikeout: taskCheck.checked
+                            verticalAlignment: TextInput.AlignVCenter
+                            background: Rectangle { color: "transparent" }
+                            readOnly: taskCheck.checked
 
-                        onEditingFinished: {
-                            if (text.trim() !== display) {
-                                todoListModel.updateTaskText(index, text.trim());
+                            onEditingFinished: {
+                                if (text.trim() !== display) {
+                                    todoListModel.updateTaskWithNLP(index, text.trim())
+                                }
                             }
+
+                            Behavior on color { ColorAnimation { duration: 150 } }
                         }
 
-                        Behavior on color { ColorAnimation { duration: 150 } }
+                        // Confirm mode: "Press Enter to confirm"
+                        TextField {
+                            id: confirmText
+                            anchors.fill: parent
+                            visible: root.confirmingIndex === index
+                            text: ""
+                            placeholderText: "按下 Enter 確認完成 ✔️ (Esc 取消)"
+                            font.pixelSize: 13
+                            font.family: "Inter, Segoe UI, sans-serif"
+                            color: "#00e0ff"
+                            verticalAlignment: TextInput.AlignVCenter
+                            background: Rectangle { color: "transparent" }
+
+                            Keys.onReturnPressed: {
+                                // Confirmed! Complete the task.
+                                audioController.playClickSound()
+                                todoListModel.toggleTask(index)
+                                root.confirmingIndex = -1
+                            }
+                            Keys.onEscapePressed: {
+                                root.confirmingIndex = -1
+                            }
+                            onActiveFocusChanged: {
+                                if (!activeFocus && root.confirmingIndex === index) {
+                                    root.confirmingIndex = -1
+                                }
+                            }
+                        }
                     }
 
                     // Priority Badge
@@ -150,7 +271,9 @@ Rectangle {
                         opacity: delBtn.hovered ? 1.0 : 0.0
                         
                         onClicked: {
-                            todoListModel.deleteTask(index);
+                            todoListModel.deleteTask(index)
+                            root.showUndoToast = true
+                            undoTimer.restart()
                         }
                         
                         Behavior on opacity { NumberAnimation { duration: 150 } }
@@ -162,7 +285,7 @@ Rectangle {
                     anchors.fill: parent
                     color: "#ffffff0a"
                     radius: 8
-                    visible: mouseArea.containsMouse && !taskTextField.activeFocus
+                    visible: mouseArea.containsMouse && !taskTextField.activeFocus && root.confirmingIndex !== index
                 }
 
                 MouseArea {
@@ -171,10 +294,70 @@ Rectangle {
                     hoverEnabled: true
                     propagateComposedEvents: true
                     onClicked: (mouse) => {
-                        mouse.accepted = false; // Let it pass to children
+                        mouse.accepted = false;
                     }
                 }
             }
+        }
+    }
+
+    // ── Undo Toast ──
+    Rectangle {
+        id: undoToast
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottomMargin: 8
+        width: undoRow.implicitWidth + 24
+        height: 36
+        radius: 18
+        color: "#2a2a4a"
+        border.width: 1
+        border.color: "#ffffff22"
+        visible: root.showUndoToast
+        opacity: root.showUndoToast ? 1.0 : 0.0
+        z: 100
+
+        Behavior on opacity { NumberAnimation { duration: 300 } }
+
+        RowLayout {
+            id: undoRow
+            anchors.centerIn: parent
+            spacing: 8
+
+            Text {
+                text: "已刪除任務"
+                color: "#aaaacc"
+                font.pixelSize: 12
+                font.family: "Inter, Segoe UI, sans-serif"
+            }
+
+            Button {
+                text: "復原"
+                font.pixelSize: 12
+                font.weight: Font.Bold
+                background: Rectangle { color: "transparent" }
+
+                contentItem: Text {
+                    text: "復原"
+                    color: "#00e0ff"
+                    font.pixelSize: 12
+                    font.weight: Font.Bold
+                }
+
+                onClicked: {
+                    todoListModel.undoDelete()
+                    root.showUndoToast = false
+                    todoListModel.loadTasks()
+                }
+            }
+        }
+    }
+
+    Timer {
+        id: undoTimer
+        interval: 5000
+        onTriggered: {
+            root.showUndoToast = false
         }
     }
 }

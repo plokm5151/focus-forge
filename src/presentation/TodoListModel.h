@@ -13,6 +13,11 @@ namespace brain::presentation {
 
 class TodoListModel : public QAbstractListModel {
     Q_OBJECT
+
+    /** @brief Index of the pinned/focused task (-1 = none). */
+    Q_PROPERTY(int pinnedIndex READ pinnedIndex WRITE setPinnedIndex NOTIFY pinnedIndexChanged)
+    Q_PROPERTY(QString pinnedTaskText READ pinnedTaskText NOTIFY pinnedIndexChanged)
+
 public:
     enum Roles {
         DisplayRole = Qt::DisplayRole,
@@ -37,12 +42,41 @@ public:
     Q_INVOKABLE void toggleTask(int index);
     Q_INVOKABLE void updateTaskText(int index, const QString& newText);
     Q_INVOKABLE void deleteTask(int index);
-
     Q_INVOKABLE void loadTasks();
 
+    /** @brief Undo the last deletion (within 5 seconds). */
+    Q_INVOKABLE void undoDelete();
+
+    /** @brief Check if an undo is available. */
+    Q_INVOKABLE bool canUndo() const;
+
+    /** @brief Pin a task as the current focus objective. */
+    Q_INVOKABLE void pinTask(int index);
+
+    /** @brief Unpin the current focus objective. */
+    Q_INVOKABLE void unpinTask();
+
+    /** @brief Update task text with inline NLP parsing (priority/date tags). */
+    Q_INVOKABLE void updateTaskWithNLP(int index, const QString& rawText);
+
+    [[nodiscard]] int pinnedIndex() const;
+    void setPinnedIndex(int index);
+    [[nodiscard]] QString pinnedTaskText() const;
+
+signals:
+    void pinnedIndexChanged();
+
 private:
+    void sortByPriority();
+
     std::shared_ptr<brain::infrastructure::ObsidianSync> m_sync;
     std::vector<TodoItem> m_tasks;
+    int m_pinnedIndex{-1};
+
+    // Undo support
+    TodoItem m_lastDeletedItem;
+    int m_lastDeletedIndex{-1};
+    bool m_canUndo{false};
 };
 
 } // namespace brain::presentation

@@ -40,7 +40,8 @@ enum class TimerState : std::uint8_t {
     Idle     = 0,  ///< No active session; timer ready.
     Focusing = 1,  ///< Focus session in progress; counting down.
     CoolDown = 2,  ///< Session completed; cooldown / rest period.
-    Paused   = 3   ///< Session is paused by the user.
+    Paused   = 3,  ///< Session is paused by the user.
+    Overtime = 4   ///< Focus time ended but user continues (Flow State).
 };
 
 } // namespace brain::domain
