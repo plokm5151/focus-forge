@@ -43,7 +43,8 @@ AudioController::AudioController(QObject* parent)
     m_clickSound->setSource(QUrl::fromLocalFile(audioDir + "click.wav"));
     
     // Default volume
-    m_bgOutput->setVolume(0.5f);
+    m_volume = 0.3f;
+    m_bgOutput->setVolume(m_volume);
     m_bellOutput->setVolume(1.0f);
     m_clickSound->setVolume(0.8f);
 

@@ -545,6 +545,21 @@ ApplicationWindow {
         }
     }
 
+    // ── Global Volume Control Shortcuts ──
+    Shortcut {
+        sequences: ["Ctrl+Up", "Meta+Up"]
+        onActivated: {
+            audioController.volume = Math.min(1.0, audioController.volume + 0.1)
+        }
+    }
+
+    Shortcut {
+        sequences: ["Ctrl+Down", "Meta+Down"]
+        onActivated: {
+            audioController.volume = Math.max(0.0, audioController.volume - 0.1)
+        }
+    }
+
     QuickCapturePopup {
         id: quickCapturePopup
         

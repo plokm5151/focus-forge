@@ -94,7 +94,7 @@ private:
     QString       m_pendingSource;
 
     bool m_isMuted{false};       ///< Tracks the mute state.
-    float m_volume{0.5f};        ///< Tracks the background volume level.
+    float m_volume{0.3f};        ///< Tracks the background volume level.
 };
 
 } // namespace brain::presentation
