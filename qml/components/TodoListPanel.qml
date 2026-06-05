@@ -14,9 +14,6 @@ Rectangle {
     border.width: 1
     border.color: "#1affffff"
 
-    // Track which task is in "confirm" mode
-    property int confirmingIndex: -1
-
     // Undo toast state
     property bool showUndoToast: false
 
@@ -127,17 +124,23 @@ Rectangle {
                         checked: isCompleted
 
                         onClicked: {
-                            if (isCompleted) {
-                                // If already completed, allow unchecking directly
-                                todoListModel.toggleTask(index)
-                            } else {
-                                // Trigger inline confirmation mode
-                                root.confirmingIndex = index
-                                confirmText.forceActiveFocus()
-                            }
+                            // Play satisfying click sound
+                            audioController.playClickSound()
+                            // Toggle completion status immediately
+                            todoListModel.toggleTask(index)
+                            // Trigger small scale pop animation
+                            clickAnim.start()
+                        }
+
+                        SequentialAnimation {
+                            id: clickAnim
+                            NumberAnimation { target: indicatorRect; property: "scale"; to: 0.8; duration: 50; easing.type: Easing.OutQuad }
+                            NumberAnimation { target: indicatorRect; property: "scale"; to: 1.1; duration: 100; easing.type: Easing.OutBack }
+                            NumberAnimation { target: indicatorRect; property: "scale"; to: 1.0; duration: 100; easing.type: Easing.OutQuad }
                         }
 
                         indicator: Rectangle {
+                            id: indicatorRect
                             implicitWidth: 20
                             implicitHeight: 20
                             x: taskCheck.leftPadding
@@ -161,16 +164,11 @@ Rectangle {
                         }
                     }
 
-                    // Task Text / Confirm Prompt
-                    Item {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-
                         // Normal mode: editable text field
                         TextField {
                             id: taskTextField
-                            anchors.fill: parent
-                            visible: root.confirmingIndex !== index
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
                             text: display
                             font.pixelSize: 14
                             font.family: "Inter"
@@ -188,36 +186,6 @@ Rectangle {
 
                             Behavior on color { ColorAnimation { duration: 150 } }
                         }
-
-                        // Confirm mode: "Press Enter to confirm"
-                        TextField {
-                            id: confirmText
-                            anchors.fill: parent
-                            visible: root.confirmingIndex === index
-                            text: ""
-                            placeholderText: "按下 Enter 確認完成 ✔️ (Esc 取消)"
-                            font.pixelSize: 13
-                            font.family: "Inter"
-                            color: "#00e0ff"
-                            verticalAlignment: TextInput.AlignVCenter
-                            background: Rectangle { color: "transparent" }
-
-                            Keys.onReturnPressed: {
-                                // Confirmed! Complete the task.
-                                audioController.playClickSound()
-                                todoListModel.toggleTask(index)
-                                root.confirmingIndex = -1
-                            }
-                            Keys.onEscapePressed: {
-                                root.confirmingIndex = -1
-                            }
-                            onActiveFocusChanged: {
-                                if (!activeFocus && root.confirmingIndex === index) {
-                                    root.confirmingIndex = -1
-                                }
-                            }
-                        }
-                    }
 
                     // Priority Badge
                     Rectangle {
