@@ -115,7 +115,7 @@ ApplicationWindow {
                     width: volumeSlider.availableWidth
                     height: 4
                     radius: 2
-                    color: "#ffffff33"
+                    color: "#33ffffff"
                     
                     Rectangle {
                         width: volumeSlider.visualPosition * parent.width
@@ -196,7 +196,7 @@ ApplicationWindow {
                 background: Rectangle { color: "transparent" }
                 contentItem: Text {
                     text: minusBtn.text
-                    color: "#ffffff66"
+                    color: "#66ffffff"
                     font.pixelSize: 12
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -244,7 +244,7 @@ ApplicationWindow {
                 background: Rectangle { color: "transparent" }
                 contentItem: Text {
                     text: plusBtn.text
-                    color: "#ffffff66"
+                    color: "#66ffffff"
                     font.pixelSize: 12
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -374,7 +374,7 @@ ApplicationWindow {
                         return startBtn.pressed ? "#007a8c" : (startBtn.hovered ? "#00c8e0" : "#00a0c0")
                     }
                     border.width: 1
-                    border.color: "#00e0ff33"
+                    border.color: "#3300e0ff"
 
                     Behavior on color {
                         ColorAnimation { duration: 200 }
@@ -441,7 +441,7 @@ ApplicationWindow {
                     radius: 12
                     color: "#dc2626"
                     border.width: 1
-                    border.color: "#ff000033"
+                    border.color: "#33ff0000"
 
                     // Hold progress overlay
                     Rectangle {
@@ -450,7 +450,7 @@ ApplicationWindow {
                         anchors.bottom: parent.bottom
                         width: parent.width * stopBtn.holdProgress
                         radius: 12
-                        color: "#ffffff33"
+                        color: "#33ffffff"
                     }
                 }
             }

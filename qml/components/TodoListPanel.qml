@@ -9,10 +9,10 @@ import QtQuick.Layouts
 
 Rectangle {
     id: root
-    color: "#1a1a2e80"
+    color: "#801a1a2e"
     radius: 12
     border.width: 1
-    border.color: "#ffffff1a"
+    border.color: "#1affffff"
 
     // Track which task is in "confirm" mode
     property int confirmingIndex: -1
@@ -77,7 +77,7 @@ Rectangle {
                 contentItem: Rectangle {
                     implicitWidth: 4
                     radius: 2
-                    color: "#ffffff33"
+                    color: "#33ffffff"
                     opacity: parent.active ? 1.0 : 0.0
                     Behavior on opacity { NumberAnimation { duration: 300 } }
                 }
@@ -87,10 +87,10 @@ Rectangle {
                 id: delegateRoot
                 width: listView.width
                 height: root.itemHeight
-                color: root.confirmingIndex === index ? "#00e0ff15" : "#00000000"
+                color: root.confirmingIndex === index ? "#1500e0ff" : "#00000000"
                 radius: 8
                 border.width: root.confirmingIndex === index ? 1 : 0
-                border.color: "#00e0ff44"
+                border.color: "#4400e0ff"
 
                 Behavior on color { ColorAnimation { duration: 200 } }
                 Behavior on border.width { NumberAnimation { duration: 200 } }
@@ -143,8 +143,8 @@ Rectangle {
                             x: taskCheck.leftPadding
                             y: parent.height / 2 - height / 2
                             radius: 4
-                            color: taskCheck.checked ? "#6d28d9" : "#ffffff10"
-                            border.color: taskCheck.checked ? "#a855f7" : "#ffffff40"
+                            color: taskCheck.checked ? "#6d28d9" : "#10ffffff"
+                            border.color: taskCheck.checked ? "#a855f7" : "#40ffffff"
 
                             // Completion glow effect
                             scale: 1.0
@@ -225,9 +225,9 @@ Rectangle {
                         width: priorityText.implicitWidth + 12
                         height: 20
                         radius: 10
-                        color: priority === 3 ? "#ef444433" : (priority === 2 ? "#f59e0b33" : "#3b82f633")
+                        color: priority === 3 ? "#33ef4444" : (priority === 2 ? "#33f59e0b" : "#333b82f6")
                         border.width: 1
-                        border.color: priority === 3 ? "#ef444488" : (priority === 2 ? "#f59e0b88" : "#3b82f688")
+                        border.color: priority === 3 ? "#88ef4444" : (priority === 2 ? "#88f59e0b" : "#883b82f6")
                         
                         Text {
                             id: priorityText
@@ -246,9 +246,9 @@ Rectangle {
                         width: dateText.implicitWidth + 16
                         height: 20
                         radius: 10
-                        color: "#ffffff1a"
+                        color: "#1affffff"
                         border.width: 1
-                        border.color: "#ffffff33"
+                        border.color: "#33ffffff"
                         
                         Text {
                             id: dateText
@@ -283,7 +283,7 @@ Rectangle {
                 // Hover effect
                 Rectangle {
                     anchors.fill: parent
-                    color: "#ffffff0a"
+                    color: "#0affffff"
                     radius: 8
                     visible: mouseArea.containsMouse && !taskTextField.activeFocus && root.confirmingIndex !== index
                 }
@@ -312,7 +312,7 @@ Rectangle {
         radius: 18
         color: "#2a2a4a"
         border.width: 1
-        border.color: "#ffffff22"
+        border.color: "#22ffffff"
         visible: root.showUndoToast
         opacity: root.showUndoToast ? 1.0 : 0.0
         z: 100

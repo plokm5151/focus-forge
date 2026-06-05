@@ -44,7 +44,7 @@ Popup {
         color: "#151525"
         opacity: 0.85
         radius: 16
-        border.color: "#33ffffff"
+        border.color: "#ff33ffff"
         border.width: 1
 
         layer.enabled: true

@@ -39,7 +39,7 @@ Popup {
         color: "#1a1a30"
         opacity: 0.92
         radius: 16
-        border.color: "#a855f744"
+        border.color: "#44a855f7"
         border.width: 1
 
         layer.enabled: true
@@ -88,9 +88,9 @@ Popup {
                 wrapMode: TextEdit.Wrap
                 
                 background: Rectangle {
-                    color: "#ffffff0a"
+                    color: "#0affffff"
                     radius: 8
-                    border.color: "#ffffff1a"
+                    border.color: "#1affffff"
                     border.width: 1
                 }
 
@@ -161,7 +161,7 @@ Popup {
                     implicitHeight: 32
                     radius: 8
                     color: "transparent"
-                    border.color: "#ffffff1a"
+                    border.color: "#1affffff"
                     border.width: 1
                 }
 
