@@ -43,7 +43,7 @@ Item {
                 timerViewModel.currentStateName === "Overtime") {
                 timerViewModel.pauseFocus();
             } else if (timerViewModel.currentStateName === "Paused") {
-                timerViewModel.startFocus();
+                timerViewModel.resume();
             }
         }
     }

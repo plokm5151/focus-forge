@@ -110,8 +110,11 @@ public:
     /** @brief Pause cooldown. */
     Q_INVOKABLE void pauseCoolDown();
 
-    /** @brief Resume cooldown. */
+    /** @brief Resume cooldown directly. */
     Q_INVOKABLE void resumeCoolDown();
+
+    /** @brief Smart resume (handles paused focus, overtime, and cooldown). */
+    Q_INVOKABLE void resume();
 
     // --- Test Support ---
 

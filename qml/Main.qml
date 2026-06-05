@@ -342,7 +342,7 @@ ApplicationWindow {
                         timerViewModel.finishFocusEarly();
                         break;
                     case "Paused":
-                        timerViewModel.startFocus();
+                        timerViewModel.resume();
                         break;
                     case "CoolDown":
                         timerViewModel.pauseCoolDown();

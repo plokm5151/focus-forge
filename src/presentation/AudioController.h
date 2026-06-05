@@ -22,6 +22,7 @@
 #include <QObject>
 #include <QMediaPlayer>
 #include <QAudioOutput>
+#include <QSoundEffect>
 #include <QTimer>
 
 namespace brain::presentation {
@@ -84,8 +85,7 @@ private:
     QMediaPlayer* m_bellPlayer;
     QAudioOutput* m_bellOutput;
 
-    QMediaPlayer* m_clickPlayer;
-    QAudioOutput* m_clickOutput;
+    QSoundEffect* m_clickSound;
 
     // Crossfade support
     QTimer*       m_fadeTimer;

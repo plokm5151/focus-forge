@@ -130,12 +130,6 @@ void TimerViewModel::startFocus() {
         return;
     }
 
-    if (m_state == TimerState::Paused) {
-        setState(TimerState::Focusing);
-        m_tickTimer->start();
-        return;
-    }
-
     // Reset countdown unless a test override was injected
     if (!m_testOverride) {
         m_remainingSeconds = m_focusDurationMinutes * 60;
@@ -267,6 +261,21 @@ void TimerViewModel::resumeCoolDown() {
     if (m_state != TimerState::Paused || !m_pausedDuringCoolDown) return;
     m_pausedDuringCoolDown = false;
     setState(TimerState::CoolDown);
+    m_tickTimer->start();
+}
+
+void TimerViewModel::resume() {
+    if (m_state != TimerState::Paused) return;
+
+    if (m_pausedDuringCoolDown) {
+        m_pausedDuringCoolDown = false;
+        setState(TimerState::CoolDown);
+    } else if (m_isOvertime) {
+        setState(TimerState::Overtime);
+    } else {
+        setState(TimerState::Focusing);
+    }
+    
     m_tickTimer->start();
 }
 

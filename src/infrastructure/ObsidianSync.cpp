@@ -61,9 +61,7 @@ auto ObsidianSync::syncText(std::string_view text) -> bool {
         return false;
     }
 
-    // Generate ISO 8601 timestamp in Taiwan timezone (UTC+8)
-    QDateTime twTime = QDateTime::currentDateTimeUtc().toTimeZone(QTimeZone("Asia/Taipei"));
-    std::string timestamp = twTime.toString("yyyy-MM-ddTHH:mm:ss").toStdString();
+    // Generate ISO 8601 timestamp in Taiwan timezone (UTC+8) (Removed, timestamp is built-in to the passed text)
 
     // Write timestamped markdown entry
     ofs << "- " << text << '\n';

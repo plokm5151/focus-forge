@@ -23,8 +23,7 @@ AudioController::AudioController(QObject* parent)
     , m_bgOutput{new QAudioOutput{this}}
     , m_bellPlayer{new QMediaPlayer{this}}
     , m_bellOutput{new QAudioOutput{this}}
-    , m_clickPlayer{new QMediaPlayer{this}}
-    , m_clickOutput{new QAudioOutput{this}}
+    , m_clickSound{new QSoundEffect{this}}
     , m_fadeTimer{new QTimer{this}}
 {
     // Setup background looping audio
@@ -34,9 +33,6 @@ AudioController::AudioController(QObject* parent)
     // Setup bell audio
     m_bellPlayer->setAudioOutput(m_bellOutput);
 
-    // Setup click audio
-    m_clickPlayer->setAudioOutput(m_clickOutput);
-    
 #ifdef Q_OS_MAC
     QString audioDir = QCoreApplication::applicationDirPath() + "/../Resources/assets/audio/";
 #else
@@ -44,12 +40,12 @@ AudioController::AudioController(QObject* parent)
 #endif
 
     m_bellPlayer->setSource(QUrl::fromLocalFile(audioDir + "bell.wav"));
-    m_clickPlayer->setSource(QUrl::fromLocalFile(audioDir + "click.wav"));
+    m_clickSound->setSource(QUrl::fromLocalFile(audioDir + "click.wav"));
     
     // Default volume
     m_bgOutput->setVolume(0.5f);
     m_bellOutput->setVolume(1.0f);
-    m_clickOutput->setVolume(0.8f);
+    m_clickSound->setVolume(0.8f);
 
     // Crossfade timer: fires every 50ms for smooth 2-second fade
     m_fadeTimer->setInterval(50);
@@ -88,7 +84,7 @@ void AudioController::setMuted(bool muted) {
     m_isMuted = muted;
     m_bgOutput->setMuted(m_isMuted);
     m_bellOutput->setMuted(m_isMuted);
-    m_clickOutput->setMuted(m_isMuted);
+    m_clickSound->setMuted(m_isMuted);
     emit isMutedChanged(m_isMuted);
 }
 
@@ -109,9 +105,7 @@ void AudioController::setVolume(float volume) {
 }
 
 void AudioController::playClickSound() {
-    m_clickPlayer->stop();
-    m_clickPlayer->setPosition(0);
-    m_clickPlayer->play();
+    m_clickSound->play();
 }
 
 void AudioController::crossfadeTo(const QString& newSource) {
