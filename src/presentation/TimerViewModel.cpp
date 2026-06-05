@@ -156,6 +156,10 @@ void TimerViewModel::pauseFocus() {
     }
 
     m_tickTimer->stop();
+    if (m_pausedDuringCoolDown) {
+        m_pausedDuringCoolDown = false;
+        emit isPausedFromCoolDownChanged(false);
+    }
     setState(TimerState::Paused);
 }
 
@@ -257,8 +261,12 @@ void TimerViewModel::adjustTime(int deltaMinutes) {
 
 void TimerViewModel::pauseCoolDown() {
     if (m_state != TimerState::CoolDown) return;
+
     m_tickTimer->stop();
-    m_pausedDuringCoolDown = true;
+    if (!m_pausedDuringCoolDown) {
+        m_pausedDuringCoolDown = true;
+        emit isPausedFromCoolDownChanged(true);
+    }
     setState(TimerState::Paused);
 }
 

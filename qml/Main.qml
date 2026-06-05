@@ -412,7 +412,7 @@ ApplicationWindow {
                 property real holdProgress: 0.0
                 property bool holdActive: false
 
-                text: "⏹️ Hold to Stop"
+                text: timerViewModel.isPausedFromCoolDown ? "⏹️ Hold to Stop" : "⏭️ Hold to Break"
 
                 onPressed: {
                     holdActive = true
@@ -440,7 +440,11 @@ ApplicationWindow {
                             holdTimer.stop()
                             stopBtn.holdProgress = 0
                             stopBtn.holdActive = false
-                            timerViewModel.stopFocus()
+                            if (timerViewModel.isPausedFromCoolDown) {
+                                timerViewModel.stopFocus() // Ends break, goes to Idle
+                            } else {
+                                timerViewModel.finishFocusEarly() // Finishes focus, goes to Review/Break
+                            }
                         }
                     }
                 }

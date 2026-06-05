@@ -65,6 +65,11 @@ class TimerViewModel : public QObject {
                READ overtimeSeconds
                NOTIFY overtimeSecondsChanged)
 
+    /** @brief Whether the timer was paused during cooldown/break. */
+    Q_PROPERTY(bool isPausedFromCoolDown
+               READ isPausedFromCoolDown
+               NOTIFY isPausedFromCoolDownChanged)
+
 public:
     explicit TimerViewModel(std::shared_ptr<brain::domain::INoteSync> noteSync,
                             QObject* parent = nullptr);
@@ -81,6 +86,7 @@ public:
     [[nodiscard]] auto sessionsCompletedToday() const noexcept -> int;
     [[nodiscard]] auto isOvertime() const noexcept -> bool;
     [[nodiscard]] auto overtimeSeconds() const noexcept -> int;
+    [[nodiscard]] auto isPausedFromCoolDown() const noexcept -> bool { return m_pausedDuringCoolDown; }
 
     // --- Property Mutators ---
 
@@ -128,6 +134,7 @@ signals:
     void sessionsCompletedTodayChanged(int count);
     void isOvertimeChanged(bool overtime);
     void overtimeSecondsChanged(int seconds);
+    void isPausedFromCoolDownChanged(bool pausedFromCoolDown);
 
     /** @brief Emitted when a focus session completes (Focusing → Overtime/CoolDown). */
     void focusSessionCompleted();
