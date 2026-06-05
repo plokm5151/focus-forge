@@ -155,11 +155,14 @@ ApplicationWindow {
         // ── Breathing Orb (Central Visual — clickable for play/pause) ──
         BreathingOrb {
             Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 300
-            Layout.preferredHeight: 300
+            Layout.preferredWidth: todoListPanel.visible ? 160 : 300
+            Layout.preferredHeight: todoListPanel.visible ? 160 : 300
 
             stateName: timerViewModel.currentStateName
             remainingSeconds: timerViewModel.remainingSeconds
+
+            Behavior on Layout.preferredWidth { NumberAnimation { duration: 400; easing.type: Easing.OutQuart } }
+            Behavior on Layout.preferredHeight { NumberAnimation { duration: 400; easing.type: Easing.OutQuart } }
         }
 
         // ── Pinned Focus Objective ──
@@ -223,13 +226,14 @@ ApplicationWindow {
                              + String(secs).padStart(2, '0');
                     }
                 }
-                font.pixelSize: 64
+                font.pixelSize: todoListPanel.visible ? 48 : 64
                 font.weight: Font.Light
                 font.family: "JetBrains Mono, SF Mono, Consolas, monospace"
                 font.letterSpacing: 4
                 color: timerViewModel.isOvertime ? "#ff8c00" : "#ffffff"
                 opacity: 0.95
 
+                Behavior on font.pixelSize { NumberAnimation { duration: 400; easing.type: Easing.OutQuart } }
                 Behavior on color { ColorAnimation { duration: 600 } }
                 Behavior on opacity { NumberAnimation { duration: 400 } }
             }
@@ -300,9 +304,9 @@ ApplicationWindow {
             z: 10
             visible: false
             Layout.fillWidth: true
+            Layout.fillHeight: true
             Layout.margins: 10
-            Layout.preferredHeight: implicitHeight
-            Layout.maximumHeight: 300
+            Layout.maximumHeight: 250
         }
 
         // ── Spacer ──
