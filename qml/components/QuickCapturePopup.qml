@@ -65,7 +65,7 @@ Popup {
             id: taskInput
             placeholderText: qsTr("Capture... (Use !h/m/l for priority, !t/tmrw for date)")
             font.pixelSize: 18
-            font.family: "Inter, Segoe UI, sans-serif"
+            font.family: "Inter"
             color: "#ffffff"
             wrapMode: TextEdit.Wrap
             

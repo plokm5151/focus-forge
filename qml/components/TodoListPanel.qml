@@ -39,7 +39,7 @@ Rectangle {
             text: qsTr("📝 Focus Tasks")
             font.pixelSize: 16
             font.weight: Font.DemiBold
-            font.family: "Inter, Segoe UI, sans-serif"
+            font.family: "Inter"
             color: "#ffffff"
             Layout.bottomMargin: 8
         }
@@ -51,7 +51,7 @@ Rectangle {
             Layout.fillHeight: true
             text: qsTr("任務已清空\n按下 Cmd+T 捕捉下一個靈感 💡")
             font.pixelSize: 14
-            font.family: "Inter, Segoe UI, sans-serif"
+            font.family: "Inter"
             color: "#555577"
             opacity: 0.7
             horizontalAlignment: Text.AlignHCenter
@@ -173,7 +173,7 @@ Rectangle {
                             visible: root.confirmingIndex !== index
                             text: display
                             font.pixelSize: 14
-                            font.family: "Inter, Segoe UI, sans-serif"
+                            font.family: "Inter"
                             color: taskCheck.checked ? "#8888aa" : "#ffffff"
                             font.strikeout: taskCheck.checked
                             verticalAlignment: TextInput.AlignVCenter
@@ -197,7 +197,7 @@ Rectangle {
                             text: ""
                             placeholderText: "按下 Enter 確認完成 ✔️ (Esc 取消)"
                             font.pixelSize: 13
-                            font.family: "Inter, Segoe UI, sans-serif"
+                            font.family: "Inter"
                             color: "#00e0ff"
                             verticalAlignment: TextInput.AlignVCenter
                             background: Rectangle { color: "transparent" }
@@ -236,7 +236,7 @@ Rectangle {
                             color: priority === 3 ? "#fca5a5" : (priority === 2 ? "#fcd34d" : "#93c5fd")
                             font.pixelSize: 11
                             font.weight: Font.DemiBold
-                            font.family: "Inter, Segoe UI, sans-serif"
+                            font.family: "Inter"
                         }
                     }
 
@@ -256,7 +256,7 @@ Rectangle {
                             text: "📅 " + dueDate
                             color: "#d1d5db"
                             font.pixelSize: 11
-                            font.family: "Inter, Segoe UI, sans-serif"
+                            font.family: "Inter"
                         }
                     }
 
@@ -328,7 +328,7 @@ Rectangle {
                 text: "已刪除任務"
                 color: "#aaaacc"
                 font.pixelSize: 12
-                font.family: "Inter, Segoe UI, sans-serif"
+                font.family: "Inter"
             }
 
             Button {

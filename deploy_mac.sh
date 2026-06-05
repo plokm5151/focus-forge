@@ -139,6 +139,14 @@ install_name_tool -delete_rpath "$BREW_QT_PATH/lib" "$APP_BINARY" 2>/dev/null ||
 # Ensure the Frameworks rpath exists
 install_name_tool -add_rpath @executable_path/../Frameworks "$APP_BINARY" 2>/dev/null || true
 
+# Rewrite absolute homebrew paths to use Frameworks folder
+otool -L "$APP_BINARY" 2>/dev/null | grep "/opt/homebrew" | awk '{print $1}' | while read -r dep; do
+    FW_DEP_NAME=$(basename "$dep")
+    install_name_tool -change "$dep" \
+        "@executable_path/../Frameworks/${FW_DEP_NAME}.framework/Versions/A/${FW_DEP_NAME}" \
+        "$APP_BINARY" 2>/dev/null || true
+done
+
 # ---- Step 7: Fix @rpath references in plugins and QML ----
 echo "==> Fixing @rpath references in plugins and QML..."
 for DIR in "$APP_BUNDLE/Contents/PlugIns" "$APP_BUNDLE/Contents/Resources/qml"; do

@@ -1,0 +1,15 @@
+objc[41275]: Class QT_ROOT_LEVEL_POOL__THESE_OBJECTS_WILL_BE_RELEASED_WHEN_QAPP_GOES_OUT_OF_SCOPE is implemented in both /opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/QtCore (0x102e78710) and /Users/plokm/Downloads/focus-forge/build_release/bin/FocusForgeApp.app/Contents/Frameworks/QtCore.framework/Versions/A/QtCore (0x1045c4710). One of the two will be used. Which one is undefined.
+objc[41275]: Class KeyValueObserver is implemented in both /opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/QtCore (0x102e78738) and /Users/plokm/Downloads/focus-forge/build_release/bin/FocusForgeApp.app/Contents/Frameworks/QtCore.framework/Versions/A/QtCore (0x1045c4738). One of the two will be used. Which one is undefined.
+objc[41275]: Class WeakPointerLifetimeTracker is implemented in both /opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/QtCore (0x102e78788) and /Users/plokm/Downloads/focus-forge/build_release/bin/FocusForgeApp.app/Contents/Frameworks/QtCore.framework/Versions/A/QtCore (0x1045c4788). One of the two will be used. Which one is undefined.
+objc[41275]: Class RunLoopModeTracker is implemented in both /opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/QtCore (0x102e787d8) and /Users/plokm/Downloads/focus-forge/build_release/bin/FocusForgeApp.app/Contents/Frameworks/QtCore.framework/Versions/A/QtCore (0x1045c47d8). One of the two will be used. Which one is undefined.
+objc[41275]: Class QDarwinPermissionHandler is implemented in both /opt/homebrew/Cellar/qt/6.9.1/lib/QtCore.framework/Versions/A/QtCore (0x102e78850) and /Users/plokm/Downloads/focus-forge/build_release/bin/FocusForgeApp.app/Contents/Frameworks/QtCore.framework/Versions/A/QtCore (0x1045c4850). One of the two will be used. Which one is undefined.
+objc[41275]: Class QMetalLayer is implemented in both /opt/homebrew/Cellar/qt/6.9.1/lib/QtGui.framework/Versions/A/QtGui (0x1021e4b28) and /Users/plokm/Downloads/focus-forge/build_release/bin/FocusForgeApp.app/Contents/Frameworks/QtGui.framework/Versions/A/QtGui (0x1040b8b28). One of the two will be used. Which one is undefined.
+QObject::moveToThread: Current thread (0x143914150) is not the object's thread (0x142e10d00).
+Cannot move to target thread (0x143914150)
+
+You might be loading two sets of Qt binaries into the same process. Check that all plugins are compiled against the right Qt binaries. Export DYLD_PRINT_LIBRARIES=1 and check that only one set of binaries are being loaded.
+qt.qpa.plugin: Could not load the Qt platform plugin "cocoa" in "" even though it was found.
+This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
+
+Available platform plugins are: cocoa.
+
