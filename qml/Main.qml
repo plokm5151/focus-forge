@@ -79,9 +79,8 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 spacing: 8
                 
-                IconImage {
+                Image {
                     source: "qrc:/qt/qml/FocusForgeApp/assets/icons/activity.svg"
-                    color: "#8888aa"
                     sourceSize.width: 24
                     sourceSize.height: 24
                     Layout.alignment: Qt.AlignVCenter
