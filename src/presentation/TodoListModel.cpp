@@ -43,12 +43,14 @@ QHash<int, QByteArray> TodoListModel::roleNames() const {
 }
 
 void TodoListModel::loadTasks() {
+    int oldPinnedOriginalIndex = -1;
+    if (m_pinnedIndex >= 0 && static_cast<std::size_t>(m_pinnedIndex) < m_tasks.size()) {
+        oldPinnedOriginalIndex = m_tasks[static_cast<std::size_t>(m_pinnedIndex)].originalIndex;
+    }
+
     beginResetModel();
     m_tasks.clear();
-    
     m_pinnedIndex = -1;
-    emit pinnedIndexChanged();
-    emit pinnedTaskTextChanged();
     
     auto syncTasks = m_sync->readTasks();
     int originalIdx = 0;
@@ -65,7 +67,20 @@ void TodoListModel::loadTasks() {
     // Auto-sort: High priority tasks float to top
     sortByPriority();
 
+    // Restore pinned index
+    if (oldPinnedOriginalIndex != -1) {
+        for (std::size_t i = 0; i < m_tasks.size(); ++i) {
+            if (m_tasks[i].originalIndex == oldPinnedOriginalIndex) {
+                m_pinnedIndex = static_cast<int>(i);
+                break;
+            }
+        }
+    }
+
     endResetModel();
+
+    emit pinnedIndexChanged();
+    emit pinnedTaskTextChanged();
 }
 
 void TodoListModel::toggleTask(int index) {
