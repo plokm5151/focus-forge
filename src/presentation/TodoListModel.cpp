@@ -1,6 +1,8 @@
 #include "TodoListModel.h"
 #include "../infrastructure/ObsidianSync.h"
 #include <QDate>
+#include <QDateTime>
+#include <QTimeZone>
 #include <QDebug>
 #include <QRegularExpression>
 #include <algorithm>
@@ -220,11 +222,13 @@ void TodoListModel::updateTaskWithNLP(int index, const QString& rawText) {
     static QRegularExpression todayRe(R"(\s*!(today|t)\b)", QRegularExpression::CaseInsensitiveOption);
     static QRegularExpression tmrwRe(R"(\s*!(tomorrow|tmrw)\b)", QRegularExpression::CaseInsensitiveOption);
 
+    QDateTime twTime = QDateTime::currentDateTimeUtc().toTimeZone(QTimeZone("Asia/Taipei"));
+
     if (text.contains(todayRe)) {
-        task.dueDate = QDate::currentDate().toString("yyyy-MM-dd");
+        task.dueDate = twTime.date().toString("yyyy-MM-dd");
         text.remove(todayRe);
     } else if (text.contains(tmrwRe)) {
-        task.dueDate = QDate::currentDate().addDays(1).toString("yyyy-MM-dd");
+        task.dueDate = twTime.date().addDays(1).toString("yyyy-MM-dd");
         text.remove(tmrwRe);
     }
 
