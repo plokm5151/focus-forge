@@ -21,13 +21,7 @@ Popup {
     focus: false    // Don't steal focus from other elements
     closePolicy: Popup.CloseOnEscape
 
-    property bool submitted: false
-
     onClosed: {
-        if (!submitted) {
-            timerViewModel.submitSessionReview("")
-        }
-        submitted = false
         reviewInput.text = ""
     }
 
@@ -102,7 +96,6 @@ Popup {
 
                 Keys.onReturnPressed: (event) => {
                     if (reviewInput.text.trim() !== "") {
-                        popup.submitted = true
                         timerViewModel.submitSessionReview(reviewInput.text.trim())
                         reviewInput.text = ""
                         popup.close()
@@ -140,7 +133,6 @@ Popup {
 
                 onClicked: {
                     let txt = reviewInput.text.trim()
-                    popup.submitted = true
                     if (txt !== "") {
                         timerViewModel.submitSessionReview(txt)
                     } else {
@@ -174,7 +166,6 @@ Popup {
                 }
 
                 onClicked: {
-                    popup.submitted = true
                     timerViewModel.submitSessionReview("")
                     reviewInput.text = ""
                     popup.close()
