@@ -47,12 +47,14 @@ void TodoListModel::loadTasks() {
     m_tasks.clear();
     
     auto syncTasks = m_sync->readTasks();
+    int originalIdx = 0;
     for (const auto& st : syncTasks) {
         m_tasks.push_back(TodoItem{
             QString::fromStdString(st.text),
             st.isCompleted,
             QString::fromStdString(st.dueDate),
-            st.priority
+            st.priority,
+            originalIdx++
         });
     }
 
@@ -68,7 +70,7 @@ void TodoListModel::toggleTask(int index) {
     auto& task = m_tasks[static_cast<std::size_t>(index)];
     task.isCompleted = !task.isCompleted;
     
-    m_sync->updateTask(index, task.isCompleted);
+    m_sync->updateTask(task.originalIndex, task.isCompleted);
     
     emit dataChanged(createIndex(index, 0), createIndex(index, 0), {IsCompletedRole});
 }
@@ -85,7 +87,7 @@ void TodoListModel::updateTaskText(int index, const QString& newText) {
     syncTask.dueDate = task.dueDate.toStdString();
     syncTask.priority = task.priority;
     
-    m_sync->updateTaskText(index, syncTask);
+    m_sync->updateTaskText(task.originalIndex, syncTask);
     
     emit dataChanged(createIndex(index, 0), createIndex(index, 0), {DisplayRole});
 }
@@ -98,11 +100,20 @@ void TodoListModel::deleteTask(int index) {
     m_lastDeletedIndex = index;
     m_canUndo = true;
 
+    int deletedOriginalIndex = m_lastDeletedItem.originalIndex;
+
     beginRemoveRows(QModelIndex(), index, index);
     m_tasks.erase(m_tasks.begin() + index);
     endRemoveRows();
 
-    m_sync->deleteTask(index);
+    m_sync->deleteTask(deletedOriginalIndex);
+
+    // Shift originalIndex for remaining tasks to match the new file structure
+    for (auto& t : m_tasks) {
+        if (t.originalIndex > deletedOriginalIndex) {
+            t.originalIndex--;
+        }
+    }
 
     // Adjust pinned index
     if (m_pinnedIndex == index) {
@@ -123,7 +134,7 @@ void TodoListModel::undoDelete() {
     m_tasks.insert(m_tasks.begin() + insertAt, m_lastDeletedItem);
     endInsertRows();
 
-    // Also re-insert into Obsidian file by reloading
+    // Also re-insert into Obsidian file
     brain::domain::INoteSync::TaskItem syncTask;
     syncTask.text = m_lastDeletedItem.text.toStdString();
     syncTask.isCompleted = m_lastDeletedItem.isCompleted;
@@ -132,6 +143,9 @@ void TodoListModel::undoDelete() {
     m_sync->appendTodo(syncTask);
 
     m_canUndo = false;
+    
+    // To ensure indices sync perfectly, we reload from disk
+    loadTasks();
 }
 
 bool TodoListModel::canUndo() const {
@@ -208,7 +222,7 @@ void TodoListModel::updateTaskWithNLP(int index, const QString& rawText) {
     syncTask.isCompleted = task.isCompleted;
     syncTask.dueDate = task.dueDate.toStdString();
     syncTask.priority = task.priority;
-    m_sync->updateTaskText(index, syncTask);
+    m_sync->updateTaskText(task.originalIndex, syncTask);
 
     emit dataChanged(createIndex(index, 0), createIndex(index, 0), {DisplayRole, PriorityRole, DueDateRole});
 

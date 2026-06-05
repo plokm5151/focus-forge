@@ -31,6 +31,7 @@ public:
         bool isCompleted;
         QString dueDate;
         int priority; // 3 = High, 2 = Normal, 1 = Low
+        int originalIndex; // Index in the Obsidian file
     };
 
     explicit TodoListModel(std::shared_ptr<brain::infrastructure::ObsidianSync> sync, QObject* parent = nullptr);
