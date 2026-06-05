@@ -209,6 +209,7 @@ ApplicationWindow {
             // -5 min (visible on hover)
             Button {
                 id: minusBtn
+                visible: timerViewModel.currentStateName === "Idle"
                 text: "-5"
                 font.pixelSize: 12
                 font.family: "Inter"
@@ -258,6 +259,7 @@ ApplicationWindow {
             // +5 min (visible on hover)
             Button {
                 id: plusBtn
+                visible: timerViewModel.currentStateName === "Idle"
                 text: "+5"
                 font.pixelSize: 12
                 font.family: "Inter"
@@ -403,48 +405,17 @@ ApplicationWindow {
                 }
             }
 
-            // Stop Button — LONG PRESS (1.5s) to prevent accidental reset
+            // Stop Button — Instant Reset
             Button {
                 id: stopBtn
                 visible: timerViewModel.currentStateName !== "Idle"
                 scale: pressed ? 0.95 : 1.0
-                property real holdProgress: 0.0
-                property bool holdActive: false
 
-                text: "⏹️ Hold to Reset"
+                text: "⏹️ Reset"
 
-                onPressed: {
-                    holdActive = true
-                    holdProgress = 0
-                    holdTimer.start()
+                onClicked: {
+                    timerViewModel.stopFocus() // Universally aborts to Idle
                 }
-                onReleased: {
-                    holdActive = false
-                    holdTimer.stop()
-                    holdProgress = 0
-                }
-                onCanceled: {
-                    holdActive = false
-                    holdTimer.stop()
-                    holdProgress = 0
-                }
-
-                Timer {
-                    id: holdTimer
-                    interval: 50
-                    repeat: true
-                    onTriggered: {
-                        stopBtn.holdProgress += 50.0 / 1500.0
-                        if (stopBtn.holdProgress >= 1.0) {
-                            holdTimer.stop()
-                            stopBtn.holdProgress = 0
-                            stopBtn.holdActive = false
-                            timerViewModel.stopFocus() // Universally aborts to Idle
-                        }
-                    }
-                }
-
-                Behavior on scale { NumberAnimation { duration: 100 } }
 
                 contentItem: Text {
                     text: stopBtn.text
@@ -457,22 +428,14 @@ ApplicationWindow {
                 }
 
                 background: Rectangle {
-                    implicitWidth: 150
+                    implicitWidth: 120
                     implicitHeight: 48
                     radius: 12
-                    color: "#dc2626"
+                    color: stopBtn.pressed ? "#991b1b" : (stopBtn.hovered ? "#ef4444" : "#dc2626")
                     border.width: 1
                     border.color: "#33ff0000"
-
-                    // Hold progress overlay
-                    Rectangle {
-                        anchors.left: parent.left
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
-                        width: parent.width * stopBtn.holdProgress
-                        radius: 12
-                        color: "#33ffffff"
-                    }
+                    
+                    Behavior on color { ColorAnimation { duration: 150 } }
                 }
             }
         }
