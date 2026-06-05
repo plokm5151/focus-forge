@@ -90,6 +90,12 @@ public:
      */
     [[nodiscard]] auto obsidianVaultPath() const noexcept -> std::string_view;
 
+    /**
+     * @brief Gets the user's total accumulated ghost fire points.
+     * @return Total points.
+     */
+    [[nodiscard]] auto totalPoints() const noexcept -> std::int32_t;
+
     // --- Mutators (persist to config.json) ---
 
     /**
@@ -111,6 +117,12 @@ public:
      * @param path Absolute path to the Obsidian vault.
      */
     void setObsidianVaultPath(std::string_view path);
+
+    /**
+     * @brief Adds to the total points and persists to disk.
+     * @param points The total points to set.
+     */
+    void setTotalPoints(std::int32_t points);
 
 private:
     /**
@@ -139,6 +151,7 @@ private:
 
     std::int32_t m_focusDurationMinutes;    ///< Focus session length in minutes (default: 40).
     std::int32_t m_coolDownDurationMinutes;  ///< Cooldown length in minutes (default: 10).
+    std::int32_t m_totalPoints;             ///< Accumulated points.
     std::string  m_obsidianVaultPath;       ///< Path to Obsidian vault directory.
 };
 

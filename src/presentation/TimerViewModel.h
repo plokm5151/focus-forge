@@ -60,6 +60,16 @@ class TimerViewModel : public QObject {
                READ isOvertime
                NOTIFY isOvertimeChanged)
 
+    /** @brief Total accumulated gamification points. */
+    Q_PROPERTY(int totalPoints
+               READ totalPoints
+               NOTIFY totalPointsChanged)
+
+    /** @brief Points earned in the current session. */
+    Q_PROPERTY(int currentSessionPoints
+               READ currentSessionPoints
+               NOTIFY currentSessionPointsChanged)
+
     /** @brief Elapsed overtime seconds (counts up from 0). */
     Q_PROPERTY(int overtimeSeconds
                READ overtimeSeconds
@@ -87,6 +97,8 @@ public:
     [[nodiscard]] auto isOvertime() const noexcept -> bool;
     [[nodiscard]] auto overtimeSeconds() const noexcept -> int;
     [[nodiscard]] auto isPausedFromCoolDown() const noexcept -> bool { return m_pausedDuringCoolDown; }
+    [[nodiscard]] auto totalPoints() const noexcept -> int;
+    [[nodiscard]] auto currentSessionPoints() const noexcept -> int;
 
     // --- Property Mutators ---
 
@@ -135,6 +147,11 @@ signals:
     void isOvertimeChanged(bool overtime);
     void overtimeSecondsChanged(int seconds);
     void isPausedFromCoolDownChanged(bool pausedFromCoolDown);
+    void totalPointsChanged(int points);
+    void currentSessionPointsChanged(int points);
+
+    /** @brief Emitted when gamification points are earned to trigger UI floating text. */
+    void pointsEarned(int amount);
 
     /** @brief Emitted when a focus session completes (Focusing → Overtime/CoolDown). */
     void focusSessionCompleted();
@@ -171,6 +188,7 @@ private:
     int                                         m_overtimeSeconds{0};
     QDateTime                                   m_focusStartTime;  ///< When the current focus started (Taiwan time).
     bool                                        m_pausedDuringCoolDown{false};
+    int                                         m_currentSessionPoints{0};
 };
 
 } // namespace brain::presentation

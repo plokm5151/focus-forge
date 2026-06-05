@@ -166,8 +166,66 @@ ApplicationWindow {
             }
         }
 
+        // ── Gamification: Total Score HUD ──
+        RowLayout {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: 16
+            spacing: 8
+
+            Text {
+                text: Number(timerViewModel.totalPoints).toLocaleString() + " PTS"
+                font.pixelSize: 18
+                font.weight: Font.Bold
+                font.family: "Inter"
+                color: timerViewModel.currentStateName === "Overtime" ? "#ff8c00" : "#00e0ff"
+                opacity: 0.9
+
+                Behavior on color { ColorAnimation { duration: 600 } }
+                
+                layer.enabled: true
+                layer.effect: MultiEffect {
+                    shadowEnabled: true
+                    shadowBlur: 1.0
+                    shadowColor: timerViewModel.currentStateName === "Overtime" ? "#ff8c00" : "#00e0ff"
+                    shadowOpacity: 0.8
+                }
+            }
+        }
+
         // ── Spacer ──
         Item { Layout.fillHeight: true; Layout.maximumHeight: 40 }
+
+        // ── Gamification: Ghost Fire Component ──
+        Item {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: 60
+            Layout.preferredHeight: 60
+            Layout.topMargin: -20
+            Layout.bottomMargin: 10
+            z: 10
+
+            GhostFire {
+                id: ghostFire
+                anchors.centerIn: parent
+                isActive: timerViewModel.currentStateName === "Focusing" || timerViewModel.currentStateName === "Overtime"
+                fireColor: timerViewModel.currentStateName === "Overtime" ? "#ff8c00" : "#00e0ff"
+
+                Connections {
+                    target: timerViewModel
+                    function onPointsEarned(amount) {
+                        let c = Qt.createComponent("components/FloatingScoreText.qml")
+                        if (c.status === Component.Ready) {
+                            let obj = c.createObject(ghostFire, {
+                                "text": "+" + amount,
+                                "color": ghostFire.fireColor,
+                                "x": ghostFire.width / 2 - 20,
+                                "y": -20
+                            })
+                        }
+                    }
+                }
+            }
+        }
 
         // ── Breathing Orb (Central Visual — clickable for play/pause) ──
         BreathingOrb {

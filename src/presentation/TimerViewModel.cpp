@@ -88,6 +88,14 @@ auto TimerViewModel::overtimeSeconds() const noexcept -> int {
     return m_overtimeSeconds;
 }
 
+auto TimerViewModel::totalPoints() const noexcept -> int {
+    return AppConfig::instance().totalPoints();
+}
+
+auto TimerViewModel::currentSessionPoints() const noexcept -> int {
+    return m_currentSessionPoints;
+}
+
 // ---------------------------------------------------------------------------
 // Property Mutators
 // ---------------------------------------------------------------------------
@@ -171,8 +179,10 @@ void TimerViewModel::stopFocus() {
     m_tickTimer->stop();
     m_isOvertime = false;
     m_overtimeSeconds = 0;
+    m_currentSessionPoints = 0;
     emit isOvertimeChanged(false);
     emit overtimeSecondsChanged(0);
+    emit currentSessionPointsChanged(0);
     m_remainingSeconds = m_focusDurationMinutes * 60;
     emit remainingSecondsChanged(m_remainingSeconds);
     setState(TimerState::Idle);
@@ -345,8 +355,32 @@ void TimerViewModel::onTimerTick() {
     --m_remainingSeconds;
     emit remainingSecondsChanged(m_remainingSeconds);
 
+    if (m_state == TimerState::Focusing && m_remainingSeconds % 10 == 0 && m_remainingSeconds > 0) {
+        int rMins = m_remainingSeconds / 60;
+        int pts = 0;
+        if (rMins >= 30) pts = 10;
+        else if (rMins >= 20) pts = 20;
+        else if (rMins >= 10) pts = 30;
+        else pts = 50;
+
+        m_currentSessionPoints += pts;
+        AppConfig::instance().setTotalPoints(AppConfig::instance().totalPoints() + pts);
+        emit currentSessionPointsChanged(m_currentSessionPoints);
+        emit totalPointsChanged(AppConfig::instance().totalPoints());
+        emit pointsEarned(pts);
+    }
+
     if (m_remainingSeconds == 0) {
         m_tickTimer->stop();
+
+        if (m_state == TimerState::Focusing && m_focusDurationMinutes >= 40) {
+            int pts = 1000;
+            m_currentSessionPoints += pts;
+            AppConfig::instance().setTotalPoints(AppConfig::instance().totalPoints() + pts);
+            emit currentSessionPointsChanged(m_currentSessionPoints);
+            emit totalPointsChanged(AppConfig::instance().totalPoints());
+            emit pointsEarned(pts);
+        }
 
         if (m_state == TimerState::Focusing) {
             // ── Focus session completed → enter Overtime (Flow State) ──

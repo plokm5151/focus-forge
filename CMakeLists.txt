@@ -90,6 +90,8 @@ set(QML_RESOURCES
     qml/components/QuickCapturePopup.qml
     qml/components/TodoListPanel.qml
     qml/components/SessionReviewPopup.qml
+    qml/components/GhostFire.qml
+    qml/components/FloatingScoreText.qml
 )
 
 # ============================================================================

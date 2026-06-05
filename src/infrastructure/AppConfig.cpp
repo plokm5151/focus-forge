@@ -30,6 +30,7 @@ namespace {
 constexpr auto kConfigFileName      = "config.json";
 constexpr auto kKeyFocusDuration    = "focusDurationMinutes";
 constexpr auto kKeyCoolDownDuration = "coolDownDurationMinutes";
+constexpr auto kKeyTotalPoints      = "totalPoints";
 constexpr auto kKeyVaultPath        = "obsidianVaultPath";
 
 /**
@@ -66,6 +67,7 @@ auto AppConfig::instance() -> AppConfig& {
 AppConfig::AppConfig()
     : m_focusDurationMinutes{40}    // 40 minutes focus
     , m_coolDownDurationMinutes{10} // 10 minutes cooldown
+    , m_totalPoints{0}
     , m_obsidianVaultPath{}
 {
     load();
@@ -85,6 +87,10 @@ auto AppConfig::coolDownDurationMinutes() const noexcept -> std::int32_t {
 
 auto AppConfig::obsidianVaultPath() const noexcept -> std::string_view {
     return m_obsidianVaultPath;
+}
+
+auto AppConfig::totalPoints() const noexcept -> std::int32_t {
+    return m_totalPoints;
 }
 
 // ---------------------------------------------------------------------------
@@ -111,6 +117,12 @@ void AppConfig::setCoolDownDurationMinutes(std::int32_t minutes) {
 
 void AppConfig::setObsidianVaultPath(std::string_view path) {
     m_obsidianVaultPath = std::string{path};
+    save();
+}
+
+void AppConfig::setTotalPoints(std::int32_t points) {
+    if (points < 0) return;
+    m_totalPoints = points;
     save();
 }
 
@@ -158,6 +170,13 @@ void AppConfig::load() {
             m_obsidianVaultPath = val.toStdString();
         }
     }
+
+    if (obj.contains(QLatin1String(kKeyTotalPoints))) {
+        const int val = obj[QLatin1String(kKeyTotalPoints)].toInt(-1);
+        if (val >= 0) {
+            m_totalPoints = static_cast<std::int32_t>(val);
+        }
+    }
 }
 
 void AppConfig::save() const {
@@ -170,6 +189,7 @@ void AppConfig::save() const {
     QJsonObject obj;
     obj[QLatin1String(kKeyFocusDuration)]    = m_focusDurationMinutes;
     obj[QLatin1String(kKeyCoolDownDuration)] = m_coolDownDurationMinutes;
+    obj[QLatin1String(kKeyTotalPoints)]      = m_totalPoints;
     obj[QLatin1String(kKeyVaultPath)]        =
         QString::fromStdString(m_obsidianVaultPath);
 
