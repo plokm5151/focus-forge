@@ -118,18 +118,30 @@ Rectangle {
                         Behavior on opacity { NumberAnimation { duration: 150 } }
                     }
 
-                    // CheckBox
-                    CheckBox {
-                        id: taskCheck
-                        checked: isCompleted
+                    // CheckBox (Custom implementation for reliable clicking)
+                    Item {
+                        width: 32
+                        height: 32
+                        Layout.alignment: Qt.AlignVCenter
+                        
+                        Rectangle {
+                            id: indicatorRect
+                            width: 20
+                            height: 20
+                            anchors.centerIn: parent
+                            radius: 4
+                            color: isCompleted ? "#6d28d9" : "#10ffffff"
+                            border.color: isCompleted ? "#a855f7" : "#40ffffff"
 
-                        onClicked: {
-                            // Play satisfying click sound
-                            audioController.playClickSound()
-                            // Toggle completion status immediately
-                            todoListModel.toggleTask(index)
-                            // Trigger small scale pop animation
-                            clickAnim.start()
+                            Text {
+                                text: "✔"
+                                color: "#ffffff"
+                                font.pixelSize: 14
+                                visible: isCompleted
+                                anchors.centerIn: parent
+                            }
+
+                            Behavior on color { ColorAnimation { duration: 150 } }
                         }
 
                         SequentialAnimation {
@@ -139,28 +151,14 @@ Rectangle {
                             NumberAnimation { target: indicatorRect; property: "scale"; to: 1.0; duration: 100; easing.type: Easing.OutQuad }
                         }
 
-                        indicator: Rectangle {
-                            id: indicatorRect
-                            implicitWidth: 20
-                            implicitHeight: 20
-                            x: taskCheck.leftPadding
-                            y: parent.height / 2 - height / 2
-                            radius: 4
-                            color: taskCheck.checked ? "#6d28d9" : "#10ffffff"
-                            border.color: taskCheck.checked ? "#a855f7" : "#40ffffff"
-
-                            // Completion glow effect
-                            scale: 1.0
-
-                            Text {
-                                text: "✔"
-                                color: "#ffffff"
-                                font.pixelSize: 14
-                                visible: taskCheck.checked
-                                anchors.centerIn: parent
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                audioController.playClickSound()
+                                todoListModel.toggleTask(index)
+                                clickAnim.start()
                             }
-
-                            Behavior on color { ColorAnimation { duration: 150 } }
                         }
                     }
 
@@ -172,11 +170,11 @@ Rectangle {
                             text: display
                             font.pixelSize: 14
                             font.family: "Inter"
-                            color: taskCheck.checked ? "#8888aa" : "#ffffff"
-                            font.strikeout: taskCheck.checked
+                            color: isCompleted ? "#8888aa" : "#ffffff"
+                            font.strikeout: isCompleted
                             verticalAlignment: TextInput.AlignVCenter
                             background: Rectangle { color: "transparent" }
-                            readOnly: taskCheck.checked
+                            readOnly: isCompleted
 
                             onEditingFinished: {
                                 if (text.trim() !== display) {

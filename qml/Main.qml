@@ -406,12 +406,12 @@ ApplicationWindow {
             // Stop Button — LONG PRESS (1.5s) to prevent accidental reset
             Button {
                 id: stopBtn
-                visible: timerViewModel.currentStateName === "Paused"
+                visible: timerViewModel.currentStateName !== "Idle"
                 scale: pressed ? 0.95 : 1.0
                 property real holdProgress: 0.0
                 property bool holdActive: false
 
-                text: timerViewModel.isPausedFromCoolDown ? "⏹️ Hold to Stop" : "⏭️ Hold to Break"
+                text: "⏹️ Hold to Reset"
 
                 onPressed: {
                     holdActive = true
@@ -439,11 +439,7 @@ ApplicationWindow {
                             holdTimer.stop()
                             stopBtn.holdProgress = 0
                             stopBtn.holdActive = false
-                            if (timerViewModel.isPausedFromCoolDown) {
-                                timerViewModel.stopFocus() // Ends break, goes to Idle
-                            } else {
-                                timerViewModel.finishFocusEarly() // Finishes focus, goes to Review/Break
-                            }
+                            timerViewModel.stopFocus() // Universally aborts to Idle
                         }
                     }
                 }
