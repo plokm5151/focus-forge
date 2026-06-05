@@ -66,6 +66,7 @@ public:
 
 signals:
     void pinnedIndexChanged();
+    void pinnedTaskTextChanged();
 
 private:
     void sortByPriority();

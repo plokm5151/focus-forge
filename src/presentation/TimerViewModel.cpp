@@ -241,8 +241,13 @@ void TimerViewModel::submitSessionReview(const QString& text) {
 }
 
 void TimerViewModel::adjustTime(int deltaMinutes) {
-    if (m_state == TimerState::Idle || m_state == TimerState::Focusing ||
-        m_state == TimerState::Paused || m_state == TimerState::CoolDown) {
+    if (m_state == TimerState::Idle) {
+        int newMins = m_focusDurationMinutes + deltaMinutes;
+        if (newMins < 1) newMins = 1;
+        setFocusDurationMinutes(newMins);
+        m_remainingSeconds = m_focusDurationMinutes * 60;
+        emit remainingSecondsChanged(m_remainingSeconds);
+    } else if (m_state == TimerState::Focusing || m_state == TimerState::Paused || m_state == TimerState::CoolDown) {
         int newTime = m_remainingSeconds + (deltaMinutes * 60);
         if (newTime < 60) newTime = 60; // Minimum 1 minute
         m_remainingSeconds = newTime;

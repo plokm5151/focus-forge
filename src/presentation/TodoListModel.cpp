@@ -46,6 +46,10 @@ void TodoListModel::loadTasks() {
     beginResetModel();
     m_tasks.clear();
     
+    m_pinnedIndex = -1;
+    emit pinnedIndexChanged();
+    emit pinnedTaskTextChanged();
+    
     auto syncTasks = m_sync->readTasks();
     int originalIdx = 0;
     for (const auto& st : syncTasks) {
@@ -119,6 +123,7 @@ void TodoListModel::deleteTask(int index) {
     if (m_pinnedIndex == index) {
         m_pinnedIndex = -1;
         emit pinnedIndexChanged();
+        emit pinnedTaskTextChanged();
     } else if (m_pinnedIndex > index) {
         m_pinnedIndex--;
         emit pinnedIndexChanged();
@@ -128,13 +133,7 @@ void TodoListModel::deleteTask(int index) {
 void TodoListModel::undoDelete() {
     if (!m_canUndo) return;
 
-    // Re-insert the deleted task
-    int insertAt = std::min(m_lastDeletedIndex, static_cast<int>(m_tasks.size()));
-    beginInsertRows(QModelIndex(), insertAt, insertAt);
-    m_tasks.insert(m_tasks.begin() + insertAt, m_lastDeletedItem);
-    endInsertRows();
-
-    // Also re-insert into Obsidian file
+    // Re-insert into Obsidian file
     brain::domain::INoteSync::TaskItem syncTask;
     syncTask.text = m_lastDeletedItem.text.toStdString();
     syncTask.isCompleted = m_lastDeletedItem.isCompleted;
