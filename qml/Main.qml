@@ -31,11 +31,11 @@ ApplicationWindow {
 
     // Break health tips
     readonly property var breakTips: [
-        "站起來走走，喝杯水 💧",
-        "看向 6 公尺外的遠方 👀",
-        "深呼吸三次，放鬆肩膀 🧘",
-        "伸展手腕和手指 ✋",
-        "閉上眼睛休息一下 😌"
+        "Stand up and walk around, drink some water",
+        "Look at something 20 feet away",
+        "Take three deep breaths, relax shoulders",
+        "Stretch your wrists and fingers",
+        "Close your eyes and rest for a moment"
     ]
     property int currentTipIndex: 0
 
@@ -187,7 +187,7 @@ ApplicationWindow {
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: 4
             visible: todoListModel.pinnedTaskText !== ""
-            text: "🎯 " + todoListModel.pinnedTaskText
+            text: "FOCUS: " + todoListModel.pinnedTaskText.toUpperCase()
             font.pixelSize: 14
             font.weight: Font.Medium
             font.family: "Inter"
@@ -282,7 +282,7 @@ ApplicationWindow {
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: 8
             text: {
-                if (timerViewModel.currentStateName === "Overtime") return "FLOW STATE ✨"
+                if (timerViewModel.currentStateName === "Overtime") return "FLOW STATE"
                 return timerViewModel.currentStateName.toUpperCase()
             }
             font.pixelSize: 14
@@ -448,9 +448,9 @@ ApplicationWindow {
                      timerViewModel.currentStateName === "Overtime"
             text: {
                 switch (timerViewModel.currentStateName) {
-                case "Idle": return "☕️ Skip to Break"
-                case "Focusing": return "⏭️ Finish Early"
-                case "Overtime": return "⏭️ End Flow State"
+                case "Idle": return "Skip to Break"
+                case "Focusing": return "Finish Early"
+                case "Overtime": return "End Flow State"
                 default: return ""
                 }
             }

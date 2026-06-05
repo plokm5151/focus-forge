@@ -58,11 +58,12 @@ Popup {
 
         // Title
         Text {
-            text: qsTr("做得好！🎉")
-            font.pixelSize: 18
+            text: qsTr("SESSION COMPLETE")
+            font.pixelSize: 16
             font.weight: Font.Bold
+            font.letterSpacing: 2
             font.family: "Inter"
-            color: "#ffffff"
+            color: "#00e0ff"
             Layout.alignment: Qt.AlignHCenter
         }
 
@@ -112,7 +113,7 @@ Popup {
 
             // Submit
             Button {
-                text: "📝 提交"
+                text: "Submit"
                 font.pixelSize: 13
 
                 contentItem: Text {

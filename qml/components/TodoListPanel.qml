@@ -33,11 +33,12 @@ Rectangle {
         spacing: 10
 
         Text {
-            text: qsTr("📝 Focus Tasks")
-            font.pixelSize: 16
+            text: qsTr("FOCUS TASKS")
+            font.pixelSize: 14
             font.weight: Font.DemiBold
+            font.letterSpacing: 2
             font.family: "Inter"
-            color: "#ffffff"
+            color: "#8888aa"
             Layout.bottomMargin: 8
         }
 
@@ -46,7 +47,7 @@ Rectangle {
             visible: todoListModel.rowCount() === 0
             Layout.fillWidth: true
             Layout.fillHeight: true
-            text: qsTr("任務已清空\n按下 Cmd+T 捕捉下一個靈感 💡")
+            text: qsTr("任務已清空\n按下 Cmd+T 捕捉下一個靈感")
             font.pixelSize: 14
             font.family: "Inter"
             color: "#555577"
@@ -100,8 +101,10 @@ Rectangle {
                     // Pin Button (visible on hover)
                     Button {
                         id: pinBtn
-                        text: todoListModel.pinnedIndex === index ? "📌" : "📍"
-                        font.pixelSize: 12
+                        icon.source: todoListModel.pinnedIndex === index ? "qrc:/qt/qml/FocusForgeApp/assets/icons/pin.svg" : "qrc:/qt/qml/FocusForgeApp/assets/icons/pin-off.svg"
+                        icon.color: todoListModel.pinnedIndex === index ? "#00e0ff" : "#555577"
+                        icon.width: 14
+                        icon.height: 14
                         Layout.preferredWidth: 28
                         Layout.preferredHeight: 28
                         background: Rectangle { color: "transparent" }
@@ -133,10 +136,12 @@ Rectangle {
                             color: isCompleted ? "#6d28d9" : "#10ffffff"
                             border.color: isCompleted ? "#a855f7" : "#40ffffff"
 
-                            Text {
-                                text: "✔"
-                                color: "#ffffff"
-                                font.pixelSize: 14
+                            Image {
+                                source: "qrc:/qt/qml/FocusForgeApp/assets/icons/check.svg"
+                                width: 14
+                                height: 14
+                                sourceSize.width: 14
+                                sourceSize.height: 14
                                 visible: isCompleted
                                 anchors.centerIn: parent
                             }
@@ -219,7 +224,7 @@ Rectangle {
                         Text {
                             id: dateText
                             anchors.centerIn: parent
-                            text: "📅 " + dueDate
+                            text: dueDate
                             color: "#d1d5db"
                             font.pixelSize: 11
                             font.family: "Inter"
@@ -229,8 +234,10 @@ Rectangle {
                     // Delete Button
                     Button {
                         id: delBtn
-                        text: "🗑️"
-                        font.pixelSize: 14
+                        icon.source: "qrc:/qt/qml/FocusForgeApp/assets/icons/trash.svg"
+                        icon.color: "#ef4444"
+                        icon.width: 16
+                        icon.height: 16
                         Layout.preferredWidth: 32
                         Layout.preferredHeight: 32
                         background: Rectangle { color: "transparent" }

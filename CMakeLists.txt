@@ -142,6 +142,7 @@ qt_add_qml_module(${APP_TARGET}
     QML_FILES ${QML_RESOURCES}
     RESOURCES
         assets/icons/pin.svg
+        assets/icons/pin-off.svg
         assets/icons/volume.svg
         assets/icons/volume-x.svg
         assets/icons/list.svg
@@ -151,6 +152,8 @@ qt_add_qml_module(${APP_TARGET}
         assets/icons/target.svg
         assets/icons/lightbulb.svg
         assets/icons/activity.svg
+        assets/icons/trash.svg
+        assets/icons/check.svg
 )
 
 # ---- Shader Compilation (Qt Shader Baker → .qsb) ----
