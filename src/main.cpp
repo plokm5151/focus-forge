@@ -34,6 +34,7 @@
 #include <QQuickStyle>
 #include <QFont>
 #include <QFontDatabase>
+#include <QIcon>
 
 #include <iostream>
 #include <memory>
@@ -58,6 +59,7 @@ auto main(int argc, char* argv[]) -> int {
     QGuiApplication app{argc, argv};
     QGuiApplication::setApplicationName("FocusForgeApp");
     QGuiApplication::setApplicationVersion("0.3.0");
+    app.setWindowIcon(QIcon(":/qt/qml/FocusForgeApp/assets/images/app_icon.png"));
     QGuiApplication::setOrganizationName("FocusForge");
 
     // Fix the alias font warning in macOS by explicitly setting a default font

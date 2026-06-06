@@ -16,42 +16,33 @@ def apply_mask(image_path, output_path):
         print(f"Failed to load image: {e}")
         sys.exit(1)
 
-    # Center crop a square based on the smallest dimension
-    orig_w, orig_h = img.size
-    crop_size = int(min(orig_w, orig_h) * 0.65)  # 65% of the shortest side
-    left = (orig_w - crop_size) // 2
-    top = (orig_h - crop_size) // 2
-    right = left + crop_size
-    bottom = top + crop_size
-    print(f"Cropping center {crop_size}x{crop_size} from {orig_w}x{orig_h}...")
-    img = img.crop((left, top, right, bottom))
+    print("Cropping to non-transparent bounding box...")
+    bbox = img.getbbox()
+    if bbox:
+        img = img.crop(bbox)
 
-    # Apply a rounded rectangle mask to remove the black corners
-    print("Applying rounded square mask...")
-    mask = Image.new("L", img.size, 0)
-    draw = ImageDraw.Draw(mask)
-    
-    # We use a radius that's approximately standard for squircles
-    radius = int(crop_size * 0.22)
-    draw.rounded_rectangle((0, 0, crop_size, crop_size), radius=radius, fill=255)
-    
-    img.putalpha(mask)
+    print("Resizing to 920x920...")
+    img_920 = img.resize((920, 920), Image.Resampling.LANCZOS)
 
-    print("Resizing to 820x820...")
-    img_820 = img.resize((820, 820), Image.Resampling.LANCZOS)
-
-    print("Padding to 1024x1024...")
+    print("Padding to 1024x1024 with transparent background...")
+    # Create transparent canvas
     canvas = Image.new("RGBA", (1024, 1024), (0, 0, 0, 0))
-    offset = ((1024 - 820) // 2, (1024 - 820) // 2)
-    canvas.paste(img_820, offset, img_820)
+    offset = ((1024 - 920) // 2, (1024 - 920) // 2)
+    canvas.paste(img_920, offset, img_920)
 
     print(f"Saving to {output_path}...")
     canvas.save(output_path, "PNG")
     print("Done.")
 
 if __name__ == "__main__":
-    src = "/Users/plokm/Downloads/focus-forge/Gemini_Generated_Image_bzg7nfbzg7nfbzg7.png"
-    dst = os.path.join(os.path.dirname(__file__), "..", "assets", "images", "padded_icon.png")
+    if len(sys.argv) >= 3:
+        src = sys.argv[1]
+        dst = sys.argv[2]
+    else:
+        src = os.path.join(os.path.dirname(__file__), "..", "assets", "images", "app_icon.png")
+        dst = os.path.join(os.path.dirname(__file__), "..", "assets", "images", "padded_icon.png")
+    
+    src = os.path.abspath(src)
     dst = os.path.abspath(dst)
     
     apply_mask(src, dst)

@@ -18,7 +18,7 @@ if [ ! -f "$IMG" ]; then
     exit 1
 fi
 
-echo "==> Center cropping and padding via Flood Fill script..."
+echo "==> Resizing and padding to macOS proportions..."
 python3 scripts/make_icns.py
 
 echo "==> Generating iconset..."

@@ -189,7 +189,7 @@ codesign --force --deep --sign - "$APP_BUNDLE"
 # ---- Step 9: Refresh macOS icon cache ----
 echo "==> Refreshing macOS icon cache..."
 touch "$APP_BUNDLE"
-sudo rm -rf /Library/Caches/com.apple.iconservices.* 2>/dev/null || true
+# Removed sudo rm to avoid blocking
 killall Dock 2>/dev/null || true
 killall Finder 2>/dev/null || true
 

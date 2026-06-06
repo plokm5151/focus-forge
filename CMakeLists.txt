@@ -117,13 +117,18 @@ target_link_libraries(${APP_TARGET} PRIVATE
     Qt6::Multimedia
 )
 
-# ---- macOS Bundle Config ----
-set(APP_ICON "assets/images/app_icon.icns")
-set_source_files_properties(${APP_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
-target_sources(${APP_TARGET} PRIVATE ${APP_ICON})
-set_target_properties(${APP_TARGET} PROPERTIES
-    MACOSX_BUNDLE_ICON_FILE "app_icon.icns"
-)
+# ---- macOS & Windows App Icon Config ----
+if(APPLE)
+    set(APP_ICON "assets/images/app_icon.icns")
+    set_source_files_properties(${APP_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+    target_sources(${APP_TARGET} PRIVATE ${APP_ICON})
+    set_target_properties(${APP_TARGET} PROPERTIES
+        MACOSX_BUNDLE_ICON_FILE "app_icon.icns"
+    )
+elseif(WIN32)
+    set(APP_ICON "assets/app.rc")
+    target_sources(${APP_TARGET} PRIVATE ${APP_ICON})
+endif()
 
 # ---- Copy Assets ----
 add_custom_command(TARGET ${APP_TARGET} POST_BUILD
@@ -143,6 +148,7 @@ qt_add_qml_module(${APP_TARGET}
     VERSION 1.0
     QML_FILES ${QML_RESOURCES}
     RESOURCES
+        assets/images/app_icon.png
         assets/icons/pin.svg
         assets/icons/pin-off.svg
         assets/icons/volume.svg
