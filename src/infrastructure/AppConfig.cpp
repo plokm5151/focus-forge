@@ -200,7 +200,7 @@ void AppConfig::load() {
 
 void AppConfig::save() const {
     // Fire and forget asynchronous write to disk
-    QtConcurrent::run([this]() {
+    (void)QtConcurrent::run([this]() {
         static std::mutex s_fileMutex;
         std::lock_guard<std::mutex> fileLock(s_fileMutex);
 

@@ -140,7 +140,11 @@ if(APPLE)
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_CURRENT_SOURCE_DIR}/assets
             $<TARGET_FILE_DIR:${APP_TARGET}>/assets
-        COMMAND codesign --force --deep -s - $<TARGET_BUNDLE_DIR:${APP_TARGET}>
+        COMMAND chmod +w $<TARGET_BUNDLE_DIR:${APP_TARGET}>/Contents/Info.plist || true
+        COMMAND /usr/libexec/PlistBuddy -c "Add :NSDocumentsFolderUsageDescription string 'FocusForge needs access to your Documents folder to sync with Obsidian.'" $<TARGET_BUNDLE_DIR:${APP_TARGET}>/Contents/Info.plist || true
+        COMMAND /usr/libexec/PlistBuddy -c "Add :NSDesktopFolderUsageDescription string 'FocusForge needs access to Desktop for analytics exports.'" $<TARGET_BUNDLE_DIR:${APP_TARGET}>/Contents/Info.plist || true
+        COMMAND /usr/libexec/PlistBuddy -c "Add :NSDownloadsFolderUsageDescription string 'FocusForge needs access to Downloads for importing backups.'" $<TARGET_BUNDLE_DIR:${APP_TARGET}>/Contents/Info.plist || true
+        COMMAND codesign --force --deep --options runtime --entitlements ${CMAKE_CURRENT_SOURCE_DIR}/entitlements.plist -s - $<TARGET_BUNDLE_DIR:${APP_TARGET}>
     )
 else()
     add_custom_command(TARGET ${APP_TARGET} POST_BUILD

@@ -91,7 +91,7 @@ ApplicationWindow {
                     text: qsTr("Brain Maintenance")
                     font.pixelSize: 22
                     font.weight: Font.DemiBold
-                    font.family: "Inter"
+                    
                     color: "#8888aa"
                     opacity: 0.9
                     Layout.alignment: Qt.AlignVCenter
@@ -177,7 +177,7 @@ ApplicationWindow {
                 text: Number(timerViewModel.totalPoints).toLocaleString() + " PTS"
                 font.pixelSize: 18
                 font.weight: Font.Bold
-                font.family: "Inter"
+                
                 color: timerViewModel.currentStateName === "Overtime" ? "#ff8c00" : "#00e0ff"
                 opacity: 0.9
 
@@ -250,7 +250,7 @@ ApplicationWindow {
             text: "FOCUS: " + todoListModel.pinnedTaskText.toUpperCase()
             font.pixelSize: 14
             font.weight: Font.Medium
-            font.family: "Inter"
+            
             color: "#00e0ff"
             opacity: 0.8
             maximumLineCount: 1
@@ -309,7 +309,7 @@ ApplicationWindow {
             font.pixelSize: 14
             font.weight: Font.Medium
             font.letterSpacing: 6
-            font.family: "Inter"
+            
             color: {
                 switch (timerViewModel.currentStateName) {
                 case "Focusing": return "#00e0ff";
@@ -331,7 +331,7 @@ ApplicationWindow {
             visible: timerViewModel.currentStateName === "CoolDown"
             text: root.breakTips[root.currentTipIndex]
             font.pixelSize: 16
-            font.family: "Inter"
+            
             color: "#a855f7"
             opacity: 0.7
 
@@ -400,7 +400,7 @@ ApplicationWindow {
                     text: startBtn.text
                     font.pixelSize: 15
                     font.weight: Font.Medium
-                    font.family: "Inter"
+                    
                     color: startBtn.enabled ? "#ffffff" : "#888888"
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -442,7 +442,7 @@ ApplicationWindow {
                     text: stopBtn.text
                     font.pixelSize: 15
                     font.weight: Font.Medium
-                    font.family: "Inter"
+                    
                     color: "#ffffff"
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -476,7 +476,7 @@ ApplicationWindow {
                 }
             }
             font.pixelSize: 12
-            font.family: "Inter"
+            
             color: "#555577"
             opacity: skipArea.containsMouse ? 0.9 : 0.4
 
@@ -531,7 +531,7 @@ ApplicationWindow {
                   .arg(timerViewModel.focusDurationMinutes)
                   .arg(timerViewModel.coolDownDurationMinutes)
             font.pixelSize: 12
-            font.family: "Inter"
+            
             color: "#444466"
         }
     }
@@ -612,7 +612,7 @@ ApplicationWindow {
                 text: Math.round(audioController.volume * 100) + "%"
                 color: "#ffffff"
                 font.pixelSize: 12
-                font.family: "Inter"
+                
             }
         }
 

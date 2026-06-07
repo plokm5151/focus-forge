@@ -37,7 +37,6 @@ Rectangle {
             font.pixelSize: 14
             font.weight: Font.DemiBold
             font.letterSpacing: 2
-            font.family: "Inter"
             color: "#8888aa"
             Layout.bottomMargin: 8
         }
@@ -49,7 +48,6 @@ Rectangle {
             Layout.fillHeight: true
             text: qsTr("任務已清空\n按下 Cmd+T 捕捉下一個靈感")
             font.pixelSize: 14
-            font.family: "Inter"
             color: "#555577"
             opacity: 0.7
             horizontalAlignment: Text.AlignHCenter
@@ -99,7 +97,6 @@ Rectangle {
                     font.pixelSize: 12
                     font.weight: Font.Medium
                     font.letterSpacing: 2
-                    font.family: "Inter"
                     color: "#555577"
                 }
 
@@ -218,7 +215,6 @@ Rectangle {
                             Layout.fillHeight: true
                             text: display
                             font.pixelSize: 14
-                            font.family: "Inter"
                             color: isCompleted ? "#8888aa" : "#ffffff"
                             font.strikeout: isCompleted
                             verticalAlignment: TextInput.AlignVCenter
@@ -251,7 +247,6 @@ Rectangle {
                             color: priority === 3 ? "#fca5a5" : (priority === 2 ? "#fcd34d" : "#93c5fd")
                             font.pixelSize: 11
                             font.weight: Font.DemiBold
-                            font.family: "Inter"
                         }
                     }
 
@@ -271,7 +266,6 @@ Rectangle {
                             text: dueDate
                             color: "#d1d5db"
                             font.pixelSize: 11
-                            font.family: "Inter"
                         }
                     }
 
@@ -346,7 +340,6 @@ Rectangle {
                 text: "已刪除任務"
                 color: "#aaaacc"
                 font.pixelSize: 12
-                font.family: "Inter"
             }
 
             Button {

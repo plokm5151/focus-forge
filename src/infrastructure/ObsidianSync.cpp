@@ -51,7 +51,7 @@ auto ObsidianSync::syncText(std::string_view text) -> bool {
     std::string vault = m_vaultPath;
     std::string logName = m_logFileName;
 
-    QtConcurrent::run([textCopy, vault, logName]() {
+    (void)QtConcurrent::run([textCopy, vault, logName]() {
         std::lock_guard<std::mutex> lock(s_obsidianMutex);
         
         const fs::path vaultDir{vault};
@@ -96,7 +96,7 @@ void ObsidianSync::appendTodo(const TaskItem& task) {
     std::string vault = m_vaultPath;
     TaskItem taskCopy = task;
 
-    QtConcurrent::run([vault, taskCopy]() {
+    (void)QtConcurrent::run([vault, taskCopy]() {
         std::lock_guard<std::mutex> lock(s_obsidianMutex);
         
         const fs::path vaultDir{vault};
@@ -178,7 +178,7 @@ void ObsidianSync::updateTask(int index, bool isCompleted) {
 
     std::string vault = m_vaultPath;
 
-    QtConcurrent::run([vault, index, isCompleted]() {
+    (void)QtConcurrent::run([vault, index, isCompleted]() {
         std::lock_guard<std::mutex> lock(s_obsidianMutex);
         
         const fs::path taskFilePath = fs::path{vault} / "FocusTasks.md";
@@ -216,7 +216,7 @@ void ObsidianSync::updateTaskText(int index, const TaskItem& task) {
     std::string vault = m_vaultPath;
     TaskItem taskCopy = task;
 
-    QtConcurrent::run([vault, index, taskCopy]() {
+    (void)QtConcurrent::run([vault, index, taskCopy]() {
         std::lock_guard<std::mutex> lock(s_obsidianMutex);
         
         const fs::path taskFilePath = fs::path{vault} / "FocusTasks.md";
@@ -252,7 +252,7 @@ void ObsidianSync::deleteTask(int index) {
 
     std::string vault = m_vaultPath;
 
-    QtConcurrent::run([vault, index]() {
+    (void)QtConcurrent::run([vault, index]() {
         std::lock_guard<std::mutex> lock(s_obsidianMutex);
         
         const fs::path taskFilePath = fs::path{vault} / "FocusTasks.md";

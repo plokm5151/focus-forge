@@ -62,7 +62,6 @@ Popup {
             font.pixelSize: 16
             font.weight: Font.Bold
             font.letterSpacing: 2
-            font.family: "Inter"
             color: "#00e0ff"
             Layout.alignment: Qt.AlignHCenter
         }
@@ -70,7 +69,6 @@ Popup {
         Text {
             text: qsTr("這段專注時間內，您完成了什麼？")
             font.pixelSize: 13
-            font.family: "Inter"
             color: "#8888bb"
             Layout.alignment: Qt.AlignHCenter
         }
@@ -84,7 +82,6 @@ Popup {
                 id: reviewInput
                 placeholderText: qsTr("寫下您的反思... (Enter 提交, Esc 略過)")
                 font.pixelSize: 15
-                font.family: "Inter"
                 color: "#ffffff"
                 wrapMode: TextEdit.Wrap
                 
@@ -120,7 +117,6 @@ Popup {
                     text: parent.text
                     color: "#ffffff"
                     font.pixelSize: 13
-                    font.family: "Inter"
                     horizontalAlignment: Text.AlignHCenter
                 }
 
@@ -153,7 +149,6 @@ Popup {
                     text: parent.text
                     color: "#666688"
                     font.pixelSize: 13
-                    font.family: "Inter"
                     horizontalAlignment: Text.AlignHCenter
                 }
 
