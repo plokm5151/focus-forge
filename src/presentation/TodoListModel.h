@@ -6,9 +6,7 @@
 #include <memory>
 #include <QSortFilterProxyModel>
 
-namespace brain::infrastructure {
-    class ObsidianSync;
-}
+#include "domain/INoteSync.h"
 
 namespace brain::presentation {
 
@@ -35,7 +33,7 @@ public:
         int originalIndex; // Index in the Obsidian file
     };
 
-    explicit TodoListModel(std::shared_ptr<brain::infrastructure::ObsidianSync> sync, QObject* parent = nullptr);
+    explicit TodoListModel(std::shared_ptr<brain::domain::INoteSync> sync, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -72,7 +70,7 @@ signals:
 private:
     void sortByPriority();
 
-    std::shared_ptr<brain::infrastructure::ObsidianSync> m_sync;
+    std::shared_ptr<brain::domain::INoteSync> m_sync;
     std::vector<TodoItem> m_tasks;
     int m_pinnedIndex{-1};
 

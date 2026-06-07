@@ -9,7 +9,7 @@
 
 namespace brain::presentation {
 
-TodoListModel::TodoListModel(std::shared_ptr<brain::infrastructure::ObsidianSync> sync, QObject* parent)
+TodoListModel::TodoListModel(std::shared_ptr<brain::domain::INoteSync> sync, QObject* parent)
     : QAbstractListModel(parent), m_sync(std::move(sync))
 {
     loadTasks();
@@ -197,9 +197,17 @@ QString TodoListModel::pinnedTaskText() const {
 }
 
 void TodoListModel::updateTaskWithNLP(int index, const QString& rawText) {
-    if (index < 0 || static_cast<std::size_t>(index) >= m_tasks.size()) return;
+    if (index < -1 || (index >= 0 && static_cast<std::size_t>(index) >= m_tasks.size())) return;
 
-    auto& task = m_tasks[static_cast<std::size_t>(index)];
+    TodoItem task;
+    if (index >= 0) {
+        task = m_tasks[static_cast<std::size_t>(index)];
+    } else {
+        task.isCompleted = false;
+        task.priority = 0;
+        // The original index will be determined by loadTasks
+    }
+    
     QString text = rawText.trimmed();
 
     // Parse priority tags
@@ -240,11 +248,16 @@ void TodoListModel::updateTaskWithNLP(int index, const QString& rawText) {
     syncTask.isCompleted = task.isCompleted;
     syncTask.dueDate = task.dueDate.toStdString();
     syncTask.priority = task.priority;
-    m_sync->updateTaskText(task.originalIndex, syncTask);
+    
+    if (index >= 0) {
+        m_sync->updateTaskText(task.originalIndex, syncTask);
+        m_tasks[static_cast<std::size_t>(index)] = task;
+        emit dataChanged(createIndex(index, 0), createIndex(index, 0), {DisplayRole, PriorityRole, DueDateRole});
+    } else {
+        m_sync->appendTodo(syncTask);
+    }
 
-    emit dataChanged(createIndex(index, 0), createIndex(index, 0), {DisplayRole, PriorityRole, DueDateRole});
-
-    // Re-sort after priority change
+    // Re-sort and reload to sync indices
     loadTasks();
 }
 

@@ -148,6 +148,11 @@ TEST_F(TimerViewModelTest, FocusCompletion_TransitionsToCoolDownWithCorrectDurat
     ASSERT_TRUE(reviewSpy.wait(3000))
         << "sessionReviewRequested signal must be emitted within timeout";
         
+    EXPECT_EQ(m_viewModel->currentStateName(), QStringLiteral("Overtime"))
+        << "State must transition to 'Overtime' when focus timer reaches 0";
+    EXPECT_TRUE(m_viewModel->isOvertime())
+        << "isOvertime property must be true";
+        
     QSignalSpy completionSpy(m_viewModel.get(),
                              &brain::presentation::TimerViewModel::focusSessionCompleted);
     
@@ -187,6 +192,8 @@ TEST_F(TimerViewModelTest, CoolDownTransition_CallsSyncTextExactlyOnce) {
     ASSERT_TRUE(reviewSpy.wait(3000))
         << "sessionReviewRequested signal must be emitted";
         
+    EXPECT_EQ(m_viewModel->currentStateName(), QStringLiteral("Overtime"));
+        
     m_viewModel->submitSessionReview("Test review");
 
     // GMock automatically verifies EXPECT_CALL expectations
@@ -213,6 +220,8 @@ TEST_F(TimerViewModelTest, FullCycle_FocusingToCoolDownToIdle) {
     QSignalSpy reviewSpy(m_viewModel.get(), &brain::presentation::TimerViewModel::sessionReviewRequested);
 
     ASSERT_TRUE(reviewSpy.wait(3000));
+    EXPECT_EQ(m_viewModel->currentStateName(), QStringLiteral("Overtime"));
+    
     m_viewModel->submitSessionReview("Test review");
     EXPECT_EQ(m_viewModel->currentStateName(), QStringLiteral("CoolDown"));
 

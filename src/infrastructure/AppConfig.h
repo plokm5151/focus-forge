@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
+#include <mutex>
 
 namespace brain::infrastructure {
 
@@ -86,9 +87,9 @@ public:
 
     /**
      * @brief Gets the configured Obsidian vault path for sync.
-     * @return The vault directory path as a string view.
+     * @return The vault directory path as a string.
      */
-    [[nodiscard]] auto obsidianVaultPath() const noexcept -> std::string_view;
+    [[nodiscard]] auto obsidianVaultPath() const -> std::string;
 
     /**
      * @brief Gets the user's total accumulated ghost fire points.
@@ -153,6 +154,8 @@ private:
     std::int32_t m_coolDownDurationMinutes;  ///< Cooldown length in minutes (default: 10).
     std::int32_t m_totalPoints;             ///< Accumulated points.
     std::string  m_obsidianVaultPath;       ///< Path to Obsidian vault directory.
+    
+    mutable std::mutex m_mutex;             ///< Mutex for thread-safe access.
 };
 
 } // namespace brain::infrastructure

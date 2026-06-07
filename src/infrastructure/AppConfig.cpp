@@ -18,6 +18,8 @@
 #include <QJsonObject>
 #include <QStandardPaths>
 #include <QDir>
+#include <QtConcurrent>
+#include <QFuture>
 
 #include <stdexcept>
 
@@ -79,18 +81,22 @@ AppConfig::AppConfig()
 // ---------------------------------------------------------------------------
 
 auto AppConfig::focusDurationMinutes() const noexcept -> std::int32_t {
+    std::lock_guard<std::mutex> lock(m_mutex);
     return m_focusDurationMinutes;
 }
 
 auto AppConfig::coolDownDurationMinutes() const noexcept -> std::int32_t {
+    std::lock_guard<std::mutex> lock(m_mutex);
     return m_coolDownDurationMinutes;
 }
 
-auto AppConfig::obsidianVaultPath() const noexcept -> std::string_view {
+auto AppConfig::obsidianVaultPath() const -> std::string {
+    std::lock_guard<std::mutex> lock(m_mutex);
     return m_obsidianVaultPath;
 }
 
 auto AppConfig::totalPoints() const noexcept -> std::int32_t {
+    std::lock_guard<std::mutex> lock(m_mutex);
     return m_totalPoints;
 }
 
@@ -103,7 +109,10 @@ void AppConfig::setFocusDurationMinutes(std::int32_t minutes) {
         throw std::invalid_argument(
             "AppConfig: focusDurationMinutes must be positive");
     }
-    m_focusDurationMinutes = minutes;
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_focusDurationMinutes = minutes;
+    }
     save();
 }
 
@@ -112,18 +121,27 @@ void AppConfig::setCoolDownDurationMinutes(std::int32_t minutes) {
         throw std::invalid_argument(
             "AppConfig: coolDownDurationMinutes must be positive");
     }
-    m_coolDownDurationMinutes = minutes;
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_coolDownDurationMinutes = minutes;
+    }
     save();
 }
 
 void AppConfig::setObsidianVaultPath(std::string_view path) {
-    m_obsidianVaultPath = std::string{path};
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_obsidianVaultPath = std::string{path};
+    }
     save();
 }
 
 void AppConfig::setTotalPoints(std::int32_t points) {
     if (points < 0) return;
-    m_totalPoints = points;
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_totalPoints = points;
+    }
     save();
 }
 
@@ -181,26 +199,41 @@ void AppConfig::load() {
 }
 
 void AppConfig::save() const {
-    const QString path = resolveConfigPath();
+    // Fire and forget asynchronous write to disk
+    QtConcurrent::run([this]() {
+        static std::mutex s_fileMutex;
+        std::lock_guard<std::mutex> fileLock(s_fileMutex);
 
-    // Ensure the parent directory exists
-    const QFileInfo fileInfo{path};
-    QDir().mkpath(fileInfo.absolutePath());
+        std::int32_t focus, cd, pts;
+        std::string vault;
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            focus = m_focusDurationMinutes;
+            cd = m_coolDownDurationMinutes;
+            pts = m_totalPoints;
+            vault = m_obsidianVaultPath;
+        }
 
-    QJsonObject obj;
-    obj[QLatin1String(kKeyFocusDuration)]    = m_focusDurationMinutes;
-    obj[QLatin1String(kKeyCoolDownDuration)] = m_coolDownDurationMinutes;
-    obj[QLatin1String(kKeyTotalPoints)]      = m_totalPoints;
-    obj[QLatin1String(kKeyVaultPath)]        =
-        QString::fromStdString(m_obsidianVaultPath);
+        const QString path = resolveConfigPath();
 
-    QFile file{path};
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        return; // Write failure — silently degrade (logging in future phase)
-    }
+        // Ensure the parent directory exists
+        const QFileInfo fileInfo{path};
+        QDir().mkpath(fileInfo.absolutePath());
 
-    file.write(QJsonDocument{obj}.toJson(QJsonDocument::Indented));
-    file.close();
+        QJsonObject obj;
+        obj[QLatin1String(kKeyFocusDuration)]    = focus;
+        obj[QLatin1String(kKeyCoolDownDuration)] = cd;
+        obj[QLatin1String(kKeyTotalPoints)]      = pts;
+        obj[QLatin1String(kKeyVaultPath)]        = QString::fromStdString(vault);
+
+        QFile file{path};
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            return; // Write failure — silently degrade
+        }
+
+        file.write(QJsonDocument{obj}.toJson(QJsonDocument::Indented));
+        file.close();
+    });
 }
 
 } // namespace brain::infrastructure

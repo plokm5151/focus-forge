@@ -20,7 +20,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 ShaderTools Multimedia)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 ShaderTools Multimedia Concurrent)
 qt_policy(SET QTP0001 NEW)
 
 # ---- Strict Compiler Warnings ----
@@ -115,6 +115,7 @@ target_link_libraries(${APP_TARGET} PRIVATE
     Qt6::Quick
     Qt6::QuickControls2
     Qt6::Multimedia
+    Qt6::Concurrent
 )
 
 # ---- macOS & Windows App Icon Config ----
@@ -205,10 +206,10 @@ if(BUILD_TESTING)
     # ---- Find Qt6::Test for QSignalSpy / QTest ----
     find_package(Qt6 REQUIRED COMPONENTS Test)
 
-    # ---- Test Executable: NeuroDashTests ----
     add_executable(NeuroDashTests
         tests/TimerViewModelTests.cpp
         tests/AudioControllerTests.cpp
+        tests/TodoListModelTests.cpp
         ${DOMAIN_SOURCES}
         ${INFRASTRUCTURE_SOURCES}
         ${PRESENTATION_SOURCES}
@@ -225,6 +226,7 @@ if(BUILD_TESTING)
         Qt6::Core
         Qt6::Test
         Qt6::Multimedia
+        Qt6::Concurrent
     )
 
     qt_add_resources(NeuroDashTests "test_audio_resources"

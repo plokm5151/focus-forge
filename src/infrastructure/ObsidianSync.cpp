@@ -15,10 +15,17 @@
 #include <format>
 #include <fstream>
 #include <iostream>
+#include <mutex>
+#include <QtConcurrent>
+#include <QFuture>
 
 namespace brain::infrastructure {
 
 namespace fs = std::filesystem;
+
+namespace {
+    static std::mutex s_obsidianMutex;
+}
 
 // ---------------------------------------------------------------------------
 // Constructor
@@ -40,37 +47,28 @@ auto ObsidianSync::syncText(std::string_view text) -> bool {
         return false;
     }
 
-    const fs::path vaultDir{m_vaultPath};
-    if (!fs::exists(vaultDir) || !fs::is_directory(vaultDir)) {
-        std::error_code ec;
-        fs::create_directories(vaultDir, ec);
-        if (ec) {
-            std::cerr << "[ObsidianSync] Error: failed to create vault directory: "
-                      << m_vaultPath << '\n';
-            return false;
+    std::string textCopy{text};
+    std::string vault = m_vaultPath;
+    std::string logName = m_logFileName;
+
+    QtConcurrent::run([textCopy, vault, logName]() {
+        std::lock_guard<std::mutex> lock(s_obsidianMutex);
+        
+        const fs::path vaultDir{vault};
+        if (!fs::exists(vaultDir) || !fs::is_directory(vaultDir)) {
+            std::error_code ec;
+            fs::create_directories(vaultDir, ec);
+            if (ec) return;
         }
-    }
 
-    const fs::path logFilePath = vaultDir / m_logFileName;
+        const fs::path logFilePath = vaultDir / logName;
 
-    // Open in append mode; creates the file if it does not exist.
-    std::ofstream ofs{logFilePath, std::ios::app};
-    if (!ofs.is_open()) {
-        std::cerr << "[ObsidianSync] Error: failed to open log file: "
-                  << logFilePath << '\n';
-        return false;
-    }
+        std::ofstream ofs{logFilePath, std::ios::app};
+        if (!ofs.is_open()) return;
 
-    // Generate ISO 8601 timestamp in Taiwan timezone (UTC+8) (Removed, timestamp is built-in to the passed text)
-
-    // Write timestamped markdown entry
-    ofs << "- " << text << '\n';
-    ofs.flush();
-
-    if (ofs.fail()) {
-        std::cerr << "[ObsidianSync] Error: write to log file failed.\n";
-        return false;
-    }
+        ofs << "- " << textCopy << '\n';
+        ofs.flush();
+    });
 
     return true;
 }
@@ -95,31 +93,34 @@ void ObsidianSync::appendTodo(const TaskItem& task) {
         return;
     }
 
-    const fs::path vaultDir{m_vaultPath};
-    if (!fs::exists(vaultDir) || !fs::is_directory(vaultDir)) {
-        std::error_code ec;
-        fs::create_directories(vaultDir, ec);
-        if (ec) {
-            std::cerr << "[ObsidianSync] Error: failed to create vault directory: " << m_vaultPath << '\n';
-            return;
+    std::string vault = m_vaultPath;
+    TaskItem taskCopy = task;
+
+    QtConcurrent::run([vault, taskCopy]() {
+        std::lock_guard<std::mutex> lock(s_obsidianMutex);
+        
+        const fs::path vaultDir{vault};
+        if (!fs::exists(vaultDir) || !fs::is_directory(vaultDir)) {
+            std::error_code ec;
+            fs::create_directories(vaultDir, ec);
+            if (ec) return;
         }
-    }
 
-    const fs::path taskFilePath = vaultDir / "FocusTasks.md";
+        const fs::path taskFilePath = vaultDir / "FocusTasks.md";
 
-    std::ofstream ofs{taskFilePath, std::ios::app};
-    if (!ofs.is_open()) {
-        std::cerr << "[ObsidianSync] Error: failed to open task file: " << taskFilePath << '\n';
-        return;
-    }
+        std::ofstream ofs{taskFilePath, std::ios::app};
+        if (!ofs.is_open()) return;
 
-    ofs << formatTaskLine(task) << '\n';
-    ofs.flush();
+        ofs << formatTaskLine(taskCopy) << '\n';
+        ofs.flush();
+    });
 }
 
 auto ObsidianSync::readTasks() const -> std::vector<TaskItem> {
     std::vector<TaskItem> tasks;
     if (m_vaultPath.empty()) return tasks;
+
+    std::lock_guard<std::mutex> lock(s_obsidianMutex);
 
     const fs::path taskFilePath = fs::path{m_vaultPath} / "FocusTasks.md";
     std::ifstream ifs{taskFilePath};
@@ -175,94 +176,112 @@ auto ObsidianSync::readTasks() const -> std::vector<TaskItem> {
 void ObsidianSync::updateTask(int index, bool isCompleted) {
     if (m_vaultPath.empty() || index < 0) return;
 
-    const fs::path taskFilePath = fs::path{m_vaultPath} / "FocusTasks.md";
-    std::ifstream ifs{taskFilePath};
-    if (!ifs.is_open()) return;
+    std::string vault = m_vaultPath;
 
-    std::vector<std::string> lines;
-    std::string line;
-    int currentTaskIndex = 0;
+    QtConcurrent::run([vault, index, isCompleted]() {
+        std::lock_guard<std::mutex> lock(s_obsidianMutex);
+        
+        const fs::path taskFilePath = fs::path{vault} / "FocusTasks.md";
+        std::ifstream ifs{taskFilePath};
+        if (!ifs.is_open()) return;
 
-    while (std::getline(ifs, line)) {
-        if (line.starts_with("- [ ] ") || line.starts_with("- [x] ") || line.starts_with("- [X] ")) {
-            if (currentTaskIndex == index) {
-                // Update this task line
-                std::string prefix = isCompleted ? "- [x] " : "- [ ] ";
-                line = prefix + line.substr(6);
+        std::vector<std::string> lines;
+        std::string line;
+        int currentTaskIndex = 0;
+
+        while (std::getline(ifs, line)) {
+            if (line.starts_with("- [ ] ") || line.starts_with("- [x] ") || line.starts_with("- [X] ")) {
+                if (currentTaskIndex == index) {
+                    std::string prefix = isCompleted ? "- [x] " : "- [ ] ";
+                    line = prefix + line.substr(6);
+                }
+                currentTaskIndex++;
             }
-            currentTaskIndex++;
+            lines.push_back(line);
         }
-        lines.push_back(line);
-    }
-    ifs.close();
+        ifs.close();
 
-    std::ofstream ofs{taskFilePath, std::ios::trunc};
-    if (!ofs.is_open()) return;
+        std::ofstream ofs{taskFilePath, std::ios::trunc};
+        if (!ofs.is_open()) return;
 
-    for (const auto& l : lines) {
-        ofs << l << '\n';
-    }
+        for (const auto& l : lines) {
+            ofs << l << '\n';
+        }
+    });
 }
 
 void ObsidianSync::updateTaskText(int index, const TaskItem& task) {
     if (m_vaultPath.empty() || index < 0) return;
 
-    const fs::path taskFilePath = fs::path{m_vaultPath} / "FocusTasks.md";
-    std::ifstream ifs{taskFilePath};
-    if (!ifs.is_open()) return;
+    std::string vault = m_vaultPath;
+    TaskItem taskCopy = task;
 
-    std::vector<std::string> lines;
-    std::string line;
-    int currentTaskIndex = 0;
+    QtConcurrent::run([vault, index, taskCopy]() {
+        std::lock_guard<std::mutex> lock(s_obsidianMutex);
+        
+        const fs::path taskFilePath = fs::path{vault} / "FocusTasks.md";
+        std::ifstream ifs{taskFilePath};
+        if (!ifs.is_open()) return;
 
-    while (std::getline(ifs, line)) {
-        if (line.starts_with("- [ ] ") || line.starts_with("- [x] ") || line.starts_with("- [X] ")) {
-            if (currentTaskIndex == index) {
-                line = formatTaskLine(task);
+        std::vector<std::string> lines;
+        std::string line;
+        int currentTaskIndex = 0;
+
+        while (std::getline(ifs, line)) {
+            if (line.starts_with("- [ ] ") || line.starts_with("- [x] ") || line.starts_with("- [X] ")) {
+                if (currentTaskIndex == index) {
+                    line = formatTaskLine(taskCopy);
+                }
+                currentTaskIndex++;
             }
-            currentTaskIndex++;
+            lines.push_back(line);
         }
-        lines.push_back(line);
-    }
-    ifs.close();
+        ifs.close();
 
-    std::ofstream ofs{taskFilePath, std::ios::trunc};
-    if (!ofs.is_open()) return;
+        std::ofstream ofs{taskFilePath, std::ios::trunc};
+        if (!ofs.is_open()) return;
 
-    for (const auto& l : lines) {
-        ofs << l << '\n';
-    }
+        for (const auto& l : lines) {
+            ofs << l << '\n';
+        }
+    });
 }
 
 void ObsidianSync::deleteTask(int index) {
     if (m_vaultPath.empty() || index < 0) return;
 
-    const fs::path taskFilePath = fs::path{m_vaultPath} / "FocusTasks.md";
-    std::ifstream ifs{taskFilePath};
-    if (!ifs.is_open()) return;
+    std::string vault = m_vaultPath;
 
-    std::vector<std::string> lines;
-    std::string line;
-    int currentTaskIndex = 0;
+    QtConcurrent::run([vault, index]() {
+        std::lock_guard<std::mutex> lock(s_obsidianMutex);
+        
+        const fs::path taskFilePath = fs::path{vault} / "FocusTasks.md";
+        std::ifstream ifs{taskFilePath};
+        if (!ifs.is_open()) return;
 
-    while (std::getline(ifs, line)) {
-        if (line.starts_with("- [ ] ") || line.starts_with("- [x] ") || line.starts_with("- [X] ")) {
-            if (currentTaskIndex == index) {
+        std::vector<std::string> lines;
+        std::string line;
+        int currentTaskIndex = 0;
+
+        while (std::getline(ifs, line)) {
+            if (line.starts_with("- [ ] ") || line.starts_with("- [x] ") || line.starts_with("- [X] ")) {
+                if (currentTaskIndex == index) {
+                    currentTaskIndex++;
+                    continue; // Skip this line to delete it
+                }
                 currentTaskIndex++;
-                continue; // Skip this line to delete it
             }
-            currentTaskIndex++;
+            lines.push_back(line);
         }
-        lines.push_back(line);
-    }
-    ifs.close();
+        ifs.close();
 
-    std::ofstream ofs{taskFilePath, std::ios::trunc};
-    if (!ofs.is_open()) return;
+        std::ofstream ofs{taskFilePath, std::ios::trunc};
+        if (!ofs.is_open()) return;
 
-    for (const auto& l : lines) {
-        ofs << l << '\n';
-    }
+        for (const auto& l : lines) {
+            ofs << l << '\n';
+        }
+    });
 }
 
 } // namespace brain::infrastructure
