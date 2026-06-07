@@ -99,7 +99,7 @@ set(QML_RESOURCES
 # ============================================================================
 set(APP_TARGET FocusForgeApp)
 
-qt_add_executable(${APP_TARGET} MACOSX_BUNDLE
+qt_add_executable(${APP_TARGET} MACOSX_BUNDLE WIN32
     src/main.cpp
     ${DOMAIN_SOURCES}
     ${INFRASTRUCTURE_SOURCES}
@@ -121,22 +121,34 @@ target_link_libraries(${APP_TARGET} PRIVATE
 # ---- macOS & Windows App Icon Config ----
 if(APPLE)
     set(APP_ICON "assets/images/app_icon.icns")
-    set_source_files_properties(${APP_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
-    target_sources(${APP_TARGET} PRIVATE ${APP_ICON})
+    set(QT_CONF "assets/qt.conf")
+    set_source_files_properties(${APP_ICON} ${QT_CONF} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+    target_sources(${APP_TARGET} PRIVATE ${APP_ICON} ${QT_CONF})
     set_target_properties(${APP_TARGET} PROPERTIES
         MACOSX_BUNDLE_ICON_FILE "app_icon.icns"
+        BUILD_RPATH "/opt/homebrew/lib;/usr/local/lib"
+        INSTALL_RPATH "/opt/homebrew/lib;/usr/local/lib"
     )
 elseif(WIN32)
-    set(APP_ICON "assets/app.rc")
+    set(APP_ICON "${CMAKE_CURRENT_SOURCE_DIR}/assets/app.rc")
     target_sources(${APP_TARGET} PRIVATE ${APP_ICON})
 endif()
 
-# ---- Copy Assets ----
-add_custom_command(TARGET ${APP_TARGET} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/assets
-        $<TARGET_FILE_DIR:${APP_TARGET}>/assets
-)
+# ---- Copy Assets and Code Sign ----
+if(APPLE)
+    add_custom_command(TARGET ${APP_TARGET} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/assets
+            $<TARGET_FILE_DIR:${APP_TARGET}>/assets
+        COMMAND codesign --force --deep -s - $<TARGET_BUNDLE_DIR:${APP_TARGET}>
+    )
+else()
+    add_custom_command(TARGET ${APP_TARGET} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/assets
+            $<TARGET_FILE_DIR:${APP_TARGET}>/assets
+    )
+endif()
 
 # ---- Include Directories ----
 target_include_directories(${APP_TARGET} PRIVATE
@@ -249,3 +261,7 @@ if(BUILD_TESTING)
 
     message(STATUS "Testing enabled: NeuroDashTests target configured")
 endif()
+set_target_properties(${APP_TARGET} PROPERTIES
+    MACOSX_BUNDLE_GUI_IDENTIFIER "com.yourcompany.FocusForgeApp"
+    MACOSX_BUNDLE_BUNDLE_NAME "FocusForgeApp"
+)
