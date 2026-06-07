@@ -46,6 +46,7 @@ Popup {
             id: confirmInput
             Layout.fillWidth: true
             placeholderText: qsTr("Type 'clean' to confirm")
+            placeholderTextColor: "#88ffffff"
             font.pixelSize: 14
             color: "#ffffff"
             horizontalAlignment: TextInput.AlignHCenter
