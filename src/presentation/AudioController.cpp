@@ -34,11 +34,7 @@ AudioController::AudioController(QObject* parent)
     // Setup bell audio
     m_bellPlayer->setAudioOutput(m_bellOutput);
 
-#ifdef Q_OS_MAC
-    QString audioDir = QDir(QCoreApplication::applicationDirPath()).filePath("../Resources/assets/audio") + "/";
-#else
     QString audioDir = QDir(QCoreApplication::applicationDirPath()).filePath("assets/audio") + "/";
-#endif
 
     m_bellPlayer->setSource(QUrl::fromLocalFile(audioDir + "bell.wav"));
     m_clickSound->setSource(QUrl::fromLocalFile(audioDir + "click.wav"));
@@ -128,13 +124,7 @@ void AudioController::onTimerStateChanged(TimerState newState, TimerState oldSta
         m_bellPlayer->setPosition(0);
         m_bellPlayer->play();
     }
-
-#ifdef Q_OS_MAC
-    QString audioDir = QDir(QCoreApplication::applicationDirPath()).filePath("../Resources/assets/audio") + "/";
-#else
     QString audioDir = QDir(QCoreApplication::applicationDirPath()).filePath("assets/audio") + "/";
-#endif
-
     if (newState == TimerState::Focusing) {
         if (oldState != TimerState::Paused) {
             m_bgPlayer->setSource(QUrl::fromLocalFile(audioDir + "focus.mp3"));
