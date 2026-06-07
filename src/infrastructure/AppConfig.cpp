@@ -128,10 +128,10 @@ void AppConfig::setCoolDownDurationMinutes(std::int32_t minutes) {
     save();
 }
 
-void AppConfig::setObsidianVaultPath(std::string_view path) {
+void AppConfig::setObsidianVaultPath(std::string path) {
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_obsidianVaultPath = std::string{path};
+        m_obsidianVaultPath = std::move(path);
     }
     save();
 }

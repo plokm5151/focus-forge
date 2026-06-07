@@ -74,17 +74,21 @@ auto ObsidianSync::syncText(std::string_view text) -> bool {
 }
 
 static std::string formatTaskLine(const brain::domain::INoteSync::TaskItem& task) {
-    std::string line = task.isCompleted ? "- [x] " : "- [ ] ";
-    line += task.text;
+    std::string_view priorityStr;
+    if (task.priority == 3) priorityStr = " 🔺";
+    else if (task.priority == 2) priorityStr = " 🔼";
+    else if (task.priority == 1) priorityStr = " 🔽";
     
-    if (task.priority == 3) line += " 🔺";
-    else if (task.priority == 2) line += " 🔼";
-    else if (task.priority == 1) line += " 🔽";
-    
+    std::string dateStr;
     if (!task.dueDate.empty()) {
-        line += " 📅 " + task.dueDate;
+        dateStr = std::format(" 📅 {}", task.dueDate);
     }
-    return line;
+    
+    return std::format("- [{}] {}{}{}", 
+                       task.isCompleted ? 'x' : ' ', 
+                       task.text, 
+                       priorityStr, 
+                       dateStr);
 }
 
 void ObsidianSync::appendTodo(const TaskItem& task) {
@@ -119,6 +123,8 @@ void ObsidianSync::appendTodo(const TaskItem& task) {
 auto ObsidianSync::readTasks() const -> std::vector<TaskItem> {
     std::vector<TaskItem> tasks;
     if (m_vaultPath.empty()) return tasks;
+
+    tasks.reserve(50); // Pre-allocate to reduce vector reallocations
 
     std::lock_guard<std::mutex> lock(s_obsidianMutex);
 
@@ -182,31 +188,34 @@ void ObsidianSync::updateTask(int index, bool isCompleted) {
         std::lock_guard<std::mutex> lock(s_obsidianMutex);
         
         const fs::path taskFilePath = fs::path{vault} / "FocusTasks.md";
+        const fs::path tmpFilePath = fs::path{vault} / "FocusTasks.tmp.md";
+        
         std::ifstream ifs{taskFilePath};
         if (!ifs.is_open()) return;
 
-        std::vector<std::string> lines;
+        std::ofstream ofs{tmpFilePath, std::ios::trunc};
+        if (!ofs.is_open()) return;
+
         std::string line;
         int currentTaskIndex = 0;
 
         while (std::getline(ifs, line)) {
             if (line.starts_with("- [ ] ") || line.starts_with("- [x] ") || line.starts_with("- [X] ")) {
                 if (currentTaskIndex == index) {
-                    std::string prefix = isCompleted ? "- [x] " : "- [ ] ";
-                    line = prefix + line.substr(6);
+                    std::string_view prefix = isCompleted ? "- [x] " : "- [ ] ";
+                    line = std::format("{}{}", prefix, line.substr(6));
                 }
                 currentTaskIndex++;
             }
-            lines.push_back(line);
+            ofs << line << '\n';
         }
+        
         ifs.close();
+        ofs.flush();
+        ofs.close();
 
-        std::ofstream ofs{taskFilePath, std::ios::trunc};
-        if (!ofs.is_open()) return;
-
-        for (const auto& l : lines) {
-            ofs << l << '\n';
-        }
+        std::error_code ec;
+        fs::rename(tmpFilePath, taskFilePath, ec);
     });
 }
 
@@ -220,10 +229,14 @@ void ObsidianSync::updateTaskText(int index, const TaskItem& task) {
         std::lock_guard<std::mutex> lock(s_obsidianMutex);
         
         const fs::path taskFilePath = fs::path{vault} / "FocusTasks.md";
+        const fs::path tmpFilePath = fs::path{vault} / "FocusTasks.tmp.md";
+        
         std::ifstream ifs{taskFilePath};
         if (!ifs.is_open()) return;
 
-        std::vector<std::string> lines;
+        std::ofstream ofs{tmpFilePath, std::ios::trunc};
+        if (!ofs.is_open()) return;
+
         std::string line;
         int currentTaskIndex = 0;
 
@@ -234,16 +247,15 @@ void ObsidianSync::updateTaskText(int index, const TaskItem& task) {
                 }
                 currentTaskIndex++;
             }
-            lines.push_back(line);
+            ofs << line << '\n';
         }
+        
         ifs.close();
+        ofs.flush();
+        ofs.close();
 
-        std::ofstream ofs{taskFilePath, std::ios::trunc};
-        if (!ofs.is_open()) return;
-
-        for (const auto& l : lines) {
-            ofs << l << '\n';
-        }
+        std::error_code ec;
+        fs::rename(tmpFilePath, taskFilePath, ec);
     });
 }
 
@@ -256,10 +268,14 @@ void ObsidianSync::deleteTask(int index) {
         std::lock_guard<std::mutex> lock(s_obsidianMutex);
         
         const fs::path taskFilePath = fs::path{vault} / "FocusTasks.md";
+        const fs::path tmpFilePath = fs::path{vault} / "FocusTasks.tmp.md";
+        
         std::ifstream ifs{taskFilePath};
         if (!ifs.is_open()) return;
 
-        std::vector<std::string> lines;
+        std::ofstream ofs{tmpFilePath, std::ios::trunc};
+        if (!ofs.is_open()) return;
+
         std::string line;
         int currentTaskIndex = 0;
 
@@ -271,16 +287,15 @@ void ObsidianSync::deleteTask(int index) {
                 }
                 currentTaskIndex++;
             }
-            lines.push_back(line);
+            ofs << line << '\n';
         }
+        
         ifs.close();
+        ofs.flush();
+        ofs.close();
 
-        std::ofstream ofs{taskFilePath, std::ios::trunc};
-        if (!ofs.is_open()) return;
-
-        for (const auto& l : lines) {
-            ofs << l << '\n';
-        }
+        std::error_code ec;
+        fs::rename(tmpFilePath, taskFilePath, ec);
     });
 }
 
@@ -291,13 +306,20 @@ void ObsidianSync::clearAllTasks() {
         std::lock_guard<std::mutex> lock(s_obsidianMutex);
         
         const fs::path taskFilePath = fs::path{vault} / "FocusTasks.md";
+        const fs::path tmpFilePath = fs::path{vault} / "FocusTasks.tmp.md";
         
         try {
-            // Open with std::ios::trunc to clear the file contents completely
-            std::ofstream outFile(taskFilePath, std::ios::trunc);
+            // Write an empty file atomically
+            std::ofstream outFile(tmpFilePath, std::ios::trunc);
             if (!outFile) {
                 std::cerr << "[ObsidianSync] Error: Could not truncate FocusTasks.md\n";
+                return;
             }
+            outFile.flush();
+            outFile.close();
+
+            std::error_code ec;
+            fs::rename(tmpFilePath, taskFilePath, ec);
         } catch (const std::exception& e) {
             std::cerr << "[ObsidianSync] Exception truncating tasks: " << e.what() << "\n";
         }

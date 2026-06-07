@@ -117,7 +117,7 @@ public:
      * @brief Sets the Obsidian vault directory path and persists to disk.
      * @param path Absolute path to the Obsidian vault.
      */
-    void setObsidianVaultPath(std::string_view path);
+    void setObsidianVaultPath(std::string path);
 
     /**
      * @brief Adds to the total points and persists to disk.

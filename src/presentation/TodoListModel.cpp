@@ -100,6 +100,8 @@ void TodoListModel::updateTaskText(int index, const QString& newText) {
     if (index < 0 || static_cast<std::size_t>(index) >= m_tasks.size()) return;
     
     auto& task = m_tasks[static_cast<std::size_t>(index)];
+    if (task.text == newText) return; // Optimize: zero allocation if unchanged
+    
     task.text = newText;
     
     brain::domain::INoteSync::TaskItem syncTask;
