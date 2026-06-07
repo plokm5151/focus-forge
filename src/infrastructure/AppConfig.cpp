@@ -17,6 +17,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QStandardPaths>
+#include <QDir>
 
 #include <stdexcept>
 
@@ -45,7 +46,7 @@ constexpr auto kKeyVaultPath        = "obsidianVaultPath";
 [[nodiscard]] auto resolveConfigPath() -> QString {
     const QString dataDir =
         QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    return dataDir + QStringLiteral("/") + QLatin1String(kConfigFileName);
+    return QDir(dataDir).filePath(QLatin1String(kConfigFileName));
 }
 
 } // anonymous namespace

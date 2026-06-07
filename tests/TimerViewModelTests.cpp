@@ -40,9 +40,11 @@ public:
     ~MockNoteSync() override = default;
 
     MOCK_METHOD(bool, syncText, (std::string_view text), (override));
-    MOCK_METHOD(void, appendTodo, (std::string_view taskText), (override));
+    MOCK_METHOD(void, appendTodo, (const TaskItem& task), (override));
     MOCK_METHOD(std::vector<TaskItem>, readTasks, (), (const, override));
     MOCK_METHOD(void, updateTask, (int index, bool isCompleted), (override));
+    MOCK_METHOD(void, updateTaskText, (int index, const TaskItem& task), (override));
+    MOCK_METHOD(void, deleteTask, (int index), (override));
 };
 
 // ===========================================================================
@@ -141,11 +143,18 @@ TEST_F(TimerViewModelTest, FocusCompletion_TransitionsToCoolDownWithCorrectDurat
     m_viewModel->setRemainingSecondsForTesting(1);
     m_viewModel->startFocus();
 
+    QSignalSpy reviewSpy(m_viewModel.get(), &brain::presentation::TimerViewModel::sessionReviewRequested);
+
+    ASSERT_TRUE(reviewSpy.wait(3000))
+        << "sessionReviewRequested signal must be emitted within timeout";
+        
     QSignalSpy completionSpy(m_viewModel.get(),
                              &brain::presentation::TimerViewModel::focusSessionCompleted);
+    
+    m_viewModel->submitSessionReview("Test review");
 
-    ASSERT_TRUE(completionSpy.wait(3000))
-        << "focusSessionCompleted signal must be emitted within timeout";
+    ASSERT_EQ(completionSpy.count(), 1)
+        << "focusSessionCompleted signal must be emitted after submitSessionReview";
 
     // Verify state transition to CoolDown
     EXPECT_EQ(m_viewModel->currentStateName(), QStringLiteral("CoolDown"))
@@ -173,11 +182,12 @@ TEST_F(TimerViewModelTest, CoolDownTransition_CallsSyncTextExactlyOnce) {
     m_viewModel->setRemainingSecondsForTesting(1);
     m_viewModel->startFocus();
 
-    QSignalSpy completionSpy(m_viewModel.get(),
-                             &brain::presentation::TimerViewModel::focusSessionCompleted);
+    QSignalSpy reviewSpy(m_viewModel.get(), &brain::presentation::TimerViewModel::sessionReviewRequested);
 
-    ASSERT_TRUE(completionSpy.wait(3000))
-        << "focusSessionCompleted signal must be emitted";
+    ASSERT_TRUE(reviewSpy.wait(3000))
+        << "sessionReviewRequested signal must be emitted";
+        
+    m_viewModel->submitSessionReview("Test review");
 
     // GMock automatically verifies EXPECT_CALL expectations
     ::testing::Mock::VerifyAndClearExpectations(m_mockSync.get());
@@ -200,10 +210,10 @@ TEST_F(TimerViewModelTest, FullCycle_FocusingToCoolDownToIdle) {
     m_viewModel->setRemainingSecondsForTesting(1);
     m_viewModel->startFocus();
 
-    QSignalSpy completionSpy(m_viewModel.get(),
-                             &brain::presentation::TimerViewModel::focusSessionCompleted);
+    QSignalSpy reviewSpy(m_viewModel.get(), &brain::presentation::TimerViewModel::sessionReviewRequested);
 
-    ASSERT_TRUE(completionSpy.wait(3000));
+    ASSERT_TRUE(reviewSpy.wait(3000));
+    m_viewModel->submitSessionReview("Test review");
     EXPECT_EQ(m_viewModel->currentStateName(), QStringLiteral("CoolDown"));
 
     // Now inject 1 second of cooldown to expedite
@@ -239,11 +249,12 @@ TEST_F(TimerViewModelTest, Tick_EmitsRemainingSecondsChanged) {
     QSignalSpy secondsSpy(m_viewModel.get(),
                           &brain::presentation::TimerViewModel::remainingSecondsChanged);
 
-    QSignalSpy completionSpy(m_viewModel.get(),
-                             &brain::presentation::TimerViewModel::focusSessionCompleted);
+    QSignalSpy reviewSpy(m_viewModel.get(), &brain::presentation::TimerViewModel::sessionReviewRequested);
 
-    ASSERT_TRUE(completionSpy.wait(5000))
+    ASSERT_TRUE(reviewSpy.wait(5000))
         << "Session must complete within timeout";
+    
+    m_viewModel->submitSessionReview("Test review");
 
     // 2 ticks (2→1, 1→0) + 1 for CoolDown loading = at least 3 emissions
     EXPECT_GE(secondsSpy.count(), 2)
@@ -281,7 +292,7 @@ TEST_F(TimerViewModelTest, SubmitTodo_CallsAppendTodo) {
     using ::testing::_;
     using ::testing::Eq;
 
-    EXPECT_CALL(*m_mockSync, appendTodo(Eq("Test task")))
+    EXPECT_CALL(*m_mockSync, appendTodo(testing::Field(&brain::domain::INoteSync::TaskItem::text, "Test task")))
         .Times(1);
 
     m_viewModel->submitTodo("Test task");

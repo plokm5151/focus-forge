@@ -12,6 +12,7 @@
 #include <QUrl>
 #include <QString>
 #include <QDebug>
+#include <QDir>
 
 namespace brain::presentation {
 
@@ -34,9 +35,9 @@ AudioController::AudioController(QObject* parent)
     m_bellPlayer->setAudioOutput(m_bellOutput);
 
 #ifdef Q_OS_MAC
-    QString audioDir = QCoreApplication::applicationDirPath() + "/../Resources/assets/audio/";
+    QString audioDir = QDir(QCoreApplication::applicationDirPath()).filePath("../Resources/assets/audio") + "/";
 #else
-    QString audioDir = QCoreApplication::applicationDirPath() + "/assets/audio/";
+    QString audioDir = QDir(QCoreApplication::applicationDirPath()).filePath("assets/audio") + "/";
 #endif
 
     m_bellPlayer->setSource(QUrl::fromLocalFile(audioDir + "bell.wav"));
@@ -129,9 +130,9 @@ void AudioController::onTimerStateChanged(TimerState newState, TimerState oldSta
     }
 
 #ifdef Q_OS_MAC
-    QString audioDir = QCoreApplication::applicationDirPath() + "/../Resources/assets/audio/";
+    QString audioDir = QDir(QCoreApplication::applicationDirPath()).filePath("../Resources/assets/audio") + "/";
 #else
-    QString audioDir = QCoreApplication::applicationDirPath() + "/assets/audio/";
+    QString audioDir = QDir(QCoreApplication::applicationDirPath()).filePath("assets/audio") + "/";
 #endif
 
     if (newState == TimerState::Focusing) {

@@ -82,13 +82,13 @@ TEST_F(AudioControllerTest, TransitionToIdle_HandlesSafely) {
 TEST_F(AudioControllerTest, AssetsDirectoryIsDeployed) {
     QString appDir = QCoreApplication::applicationDirPath();
     QFileInfo bellFile(appDir + "/assets/audio/bell.wav");
-    QFileInfo focusFile(appDir + "/assets/audio/focus.ogg");
+    QFileInfo focusFile(appDir + "/assets/audio/focus.mp3");
     QFileInfo cooldownFile(appDir + "/assets/audio/cooldown.mp3");
     
     // Depending on when the test runs relative to the build, 
     // the files might not be deployed in a pure source-build if custom_command is missed.
     // The test asserts true to check if the copy_directory command worked.
     EXPECT_TRUE(bellFile.exists()) << "bell.wav must be deployed to build directory";
-    EXPECT_TRUE(focusFile.exists()) << "focus.ogg must be deployed to build directory";
+    EXPECT_TRUE(focusFile.exists()) << "focus.mp3 must be deployed to build directory";
     EXPECT_TRUE(cooldownFile.exists()) << "cooldown.mp3 must be deployed to build directory";
 }

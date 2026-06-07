@@ -231,7 +231,7 @@ if(BUILD_TESTING)
         PREFIX "/"
         FILES
             assets/audio/bell.wav
-            assets/audio/focus.ogg
+            assets/audio/focus.mp3
             assets/audio/cooldown.mp3
     )
 

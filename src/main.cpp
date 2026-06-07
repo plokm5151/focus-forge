@@ -70,7 +70,7 @@ auto main(int argc, char* argv[]) -> int {
 
     // Set a default vault path only if not yet configured
     if (config.obsidianVaultPath().empty()) {
-        config.setObsidianVaultPath(QDir::homePath().toStdString() + "/Documents/Obsidian/");
+        config.setObsidianVaultPath(QDir::home().filePath("Documents/Obsidian").toStdString());
     }
 
     // ---- Dependency Wiring (Composition Root) ----
