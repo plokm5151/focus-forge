@@ -43,6 +43,7 @@ public:
     Q_INVOKABLE void updateTaskText(int index, const QString& newText);
     Q_INVOKABLE void deleteTask(int index);
     Q_INVOKABLE void loadTasks();
+    Q_INVOKABLE void clearAllTasks();
 
     /** @brief Undo the last deletion (within 5 seconds). */
     Q_INVOKABLE void undoDelete();

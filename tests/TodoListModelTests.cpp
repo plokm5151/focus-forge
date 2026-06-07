@@ -20,6 +20,7 @@ public:
     MOCK_METHOD(void, updateTask, (int index, bool isCompleted), (override));
     MOCK_METHOD(void, updateTaskText, (int index, const TaskItem& task), (override));
     MOCK_METHOD(void, deleteTask, (int index), (override));
+    MOCK_METHOD(void, clearAllTasks, (), (override));
 };
 
 class TodoListModelTest : public ::testing::Test {
@@ -144,4 +145,26 @@ TEST_F(TodoListModelTest, UndoDelete_RestoresTaskAndSync) {
 
     EXPECT_CALL(*m_mockSync, appendTodo(_)).Times(1);
     model.undoDelete();
+}
+
+TEST_F(TodoListModelTest, ClearAllTasks_RemovesAllAndSync) {
+    using ::testing::Return;
+
+    std::vector<brain::domain::INoteSync::TaskItem> mockTasks = {
+        {"Task 1", false, "", 0},
+        {"Task 2", false, "", 0}
+    };
+
+    EXPECT_CALL(*m_mockSync, readTasks())
+        .WillOnce(Return(mockTasks));
+
+    brain::presentation::TodoListModel model(m_mockSync);
+    EXPECT_EQ(model.rowCount(), 2);
+
+    EXPECT_CALL(*m_mockSync, clearAllTasks())
+        .Times(1);
+
+    model.clearAllTasks();
+
+    EXPECT_EQ(model.rowCount(), 0);
 }

@@ -32,13 +32,49 @@ Rectangle {
         anchors.margins: 16
         spacing: 10
 
-        Text {
-            text: qsTr("FOCUS TASKS")
-            font.pixelSize: 14
-            font.weight: Font.DemiBold
-            font.letterSpacing: 2
-            color: "#8888aa"
+        RowLayout {
+            Layout.fillWidth: true
             Layout.bottomMargin: 8
+
+            Text {
+                text: qsTr("FOCUS TASKS")
+                font.pixelSize: 14
+                font.weight: Font.DemiBold
+                font.letterSpacing: 2
+                color: "#8888aa"
+                Layout.alignment: Qt.AlignVCenter
+            }
+
+            Item { Layout.fillWidth: true } // spacer
+
+            Button {
+                id: clearAllBtn
+                icon.source: "qrc:/qt/qml/FocusForgeApp/assets/icons/trash.svg"
+                icon.color: "#ef4444"
+                icon.width: 16
+                icon.height: 16
+                Layout.preferredWidth: 28
+                Layout.preferredHeight: 28
+                background: Rectangle { color: "transparent" }
+                opacity: clearAllBtn.hovered ? 1.0 : 0.6
+                visible: (activeListView.count + historyListView.count) > 0
+                
+                onClicked: {
+                    clearTasksDialog.open()
+                }
+
+                Behavior on opacity { NumberAnimation { duration: 150 } }
+                
+                ToolTip.visible: hovered
+                ToolTip.text: qsTr("Clear All Tasks")
+            }
+        }
+
+        ClearTasksDialog {
+            id: clearTasksDialog
+            onClearConfirmed: {
+                todoListModel.clearAllTasks()
+            }
         }
 
         // ── Empty State Guide ──

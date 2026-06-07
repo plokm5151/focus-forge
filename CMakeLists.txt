@@ -92,6 +92,7 @@ set(QML_RESOURCES
     qml/components/SessionReviewPopup.qml
     qml/components/GhostFire.qml
     qml/components/FloatingScoreText.qml
+    qml/components/ClearTasksDialog.qml
 )
 
 # ============================================================================

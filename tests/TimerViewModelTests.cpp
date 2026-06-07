@@ -45,6 +45,7 @@ public:
     MOCK_METHOD(void, updateTask, (int index, bool isCompleted), (override));
     MOCK_METHOD(void, updateTaskText, (int index, const TaskItem& task), (override));
     MOCK_METHOD(void, deleteTask, (int index), (override));
+    MOCK_METHOD(void, clearAllTasks, (), (override));
 };
 
 // ===========================================================================

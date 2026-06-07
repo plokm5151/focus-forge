@@ -284,4 +284,24 @@ void ObsidianSync::deleteTask(int index) {
     });
 }
 
+void ObsidianSync::clearAllTasks() {
+    std::string vault = m_vaultPath;
+
+    (void)QtConcurrent::run([vault]() {
+        std::lock_guard<std::mutex> lock(s_obsidianMutex);
+        
+        const fs::path taskFilePath = fs::path{vault} / "FocusTasks.md";
+        
+        try {
+            // Open with std::ios::trunc to clear the file contents completely
+            std::ofstream outFile(taskFilePath, std::ios::trunc);
+            if (!outFile) {
+                std::cerr << "[ObsidianSync] Error: Could not truncate FocusTasks.md\n";
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "[ObsidianSync] Exception truncating tasks: " << e.what() << "\n";
+        }
+    });
+}
+
 } // namespace brain::infrastructure

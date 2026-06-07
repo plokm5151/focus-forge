@@ -269,5 +269,14 @@ void TodoListModel::sortByPriority() {
         return a.priority > b.priority; // higher priority first
     });
 }
+void TodoListModel::clearAllTasks() {
+    if (!m_sync) return;
+
+    beginResetModel();
+    m_tasks.clear();
+    unpinTask();
+    m_sync->clearAllTasks();
+    endResetModel();
+}
 
 } // namespace brain::presentation

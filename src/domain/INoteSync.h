@@ -107,6 +107,11 @@ public:
      */
     virtual void deleteTask(int index) = 0;
 
+    /**
+     * @brief Clears all tasks.
+     */
+    virtual void clearAllTasks() = 0;
+
     // --- Deleted copy/move to prevent slicing ---
     INoteSync(const INoteSync&) = delete;
     INoteSync& operator=(const INoteSync&) = delete;

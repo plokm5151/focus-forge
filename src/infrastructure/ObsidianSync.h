@@ -73,6 +73,7 @@ public:
     void updateTask(int index, bool isCompleted) override;
     void updateTaskText(int index, const TaskItem& task) override;
     void deleteTask(int index) override;
+    void clearAllTasks() override;
 
 private:
     std::string m_vaultPath;     ///< Absolute path to the Obsidian vault.
