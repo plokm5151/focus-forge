@@ -12,9 +12,10 @@ if(POLICY CMP0146)
     cmake_policy(SET CMP0146 OLD)
 endif()
 
-# Fix for macOS Xcode 15 missing AGL framework: Force FindOpenGL to ignore AGL
+# Fix for macOS Xcode 15 missing AGL framework: Force Qt6's FindWrapOpenGL to ignore AGL
 if(APPLE)
-    set(OPENGL_agl_LIBRARY "" CACHE STRING "Override AGL library to avoid Xcode 15 linker error" FORCE)
+    set(OPENGL_agl_LIBRARY "" CACHE STRING "Override CMake AGL library" FORCE)
+    set(WrapOpenGL_AGL "-framework OpenGL" CACHE STRING "Override Qt6 AGL library to avoid Xcode 15 linker error" FORCE)
 endif()
 
 project(BrainMaintenanceDashboard
