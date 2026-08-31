@@ -49,3 +49,19 @@ This document serves as a persistent record of critical bugs encountered and res
 **Root Cause:** The method checked `if (index < -1 || static_cast<std::size_t>(index) >= m_tasks.size()) return;`. When adding a new task, `index` was passed as `-1`. However, `-1` cast to unsigned `size_t` becomes the maximum possible integer value, causing the bounds check to evaluate to `true` and the method to abort instantly.
 **Resolution:** This was discovered strictly through writing unit tests in `TodoListModelTests.cpp`. The conditional was refactored to `if (index < -1 || (index >= 0 && static_cast<std::size_t>(index) >= m_tasks.size())) return;`, preventing `-1` from ever being cast to unsigned.
 **Status:** ✅ Fixed & Unit Tested.
+
+---
+
+### 7. macOS CI Build Failure (`bundle format unrecognized, invalid, or unsuitable`)
+**Symptom:** GitHub Actions macOS build failed during the `POST_BUILD` codesign step with error `bundle format unrecognized, invalid, or unsuitable`.
+**Root Cause:** A python virtual environment (`venv`) used for image generation was temporarily created inside the `assets/` directory. CMake's `POST_BUILD` step unknowingly copied the entire `assets/` folder, including thousands of python standard library `.dylib` and executable files, into the `.app/Contents/MacOS/assets/` bundle. macOS `codesign` detected these unauthorized binaries and rejected the bundle signature.
+**Resolution:** Deleted the rogue `venv` directory and added `venv/` to `.gitignore` to prevent any non-asset binaries from being packaged.
+**Status:** ✅ Fixed.
+
+---
+
+### 8. macOS Xcode 15 Linker Crash (`ld: framework 'AGL' not found`)
+**Symptom:** The GitHub Actions `macos-latest` runner (macOS 14, Xcode 15) failed at the final `FocusForgeApp` linker step with `ld: framework 'AGL' not found`.
+**Root Cause:** Apple completely removed the obsolete AGL (Apple Graphics Library) framework from the macOS SDK starting with Xcode 15. However, Qt6's internal CMake scripts (`FindWrapOpenGL.cmake`) contain hardcoded fallback logic that forcefully injects `-framework AGL` into the linker flags if it cannot find AGL natively.
+**Resolution:** Injected a CMake cache override at the top of `CMakeLists.txt` (`set(WrapOpenGL_AGL "-framework OpenGL" CACHE STRING "" FORCE)`) to trick Qt6 into thinking it found AGL as the standard OpenGL framework, entirely bypassing the broken fallback logic.
+**Status:** ✅ Fixed.

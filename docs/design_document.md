@@ -60,3 +60,13 @@ An abstraction defining how the application synchronizes focus sessions and task
 - **Framework**: Uses Google Test (GTest) and Google Mock (GMock).
 - **Isolation**: Domain logic is tested using `MockNoteSync`, entirely bypassing the file system.
 - **Coverage**: Ensures timer state transitions, audio triggers, and point allocations function accurately.
+
+---
+
+## 7. CI/CD & Deployment
+- **Automation Pipeline**: Uses GitHub Actions for continuous integration and deployment (`ci.yml`).
+- **Cross-Platform Delivery**:
+  - **Windows**: Built with MSVC. Uses `windeployqt` to bundle all necessary Qt DLLs, QML modules, and C++ runtime libraries into a self-contained `.exe` folder.
+  - **macOS**: Built with Apple Clang (M1/ARM64). Employs CMake's `POST_BUILD` to configure entitlements and icons, then uses `macdeployqt` to resolve dependencies. To circumvent a known Xcode 15 bug involving the obsolete AGL framework, CMake cache variable `WrapOpenGL_AGL` is explicitly overridden.
+  - **Linux**: Built with GCC 13 on Ubuntu.
+- **Artifacts**: Each successful pipeline automatically generates downloadable, standalone packages for Windows (`FocusForge-Windows`) and macOS (`FocusForge-macOS`), eliminating the need for users to install Qt or Visual Studio locally.
