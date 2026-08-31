@@ -12,7 +12,7 @@
 #include <QTimeZone>
 #include <chrono>
 #include <filesystem>
-#include <format>
+
 #include <fstream>
 #include <iostream>
 #include <mutex>
@@ -203,7 +203,7 @@ void ObsidianSync::updateTask(int index, bool isCompleted) {
             if (line.starts_with("- [ ] ") || line.starts_with("- [x] ") || line.starts_with("- [X] ")) {
                 if (currentTaskIndex == index) {
                     std::string_view prefix = isCompleted ? "- [x] " : "- [ ] ";
-                    line = std::format("{}{}", prefix, line.substr(6));
+                    line = std::string(prefix) + std::string(line.substr(6));
                 }
                 currentTaskIndex++;
             }
