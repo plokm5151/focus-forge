@@ -4,6 +4,19 @@
 # ============================================================================
 cmake_minimum_required(VERSION 3.21)
 
+# CMake policies
+if(POLICY CMP0072)
+    cmake_policy(SET CMP0072 NEW)
+endif()
+if(POLICY CMP0146)
+    cmake_policy(SET CMP0146 OLD)
+endif()
+
+# Fix for macOS Xcode 15 missing AGL framework: Force FindOpenGL to ignore AGL
+if(APPLE)
+    set(OPENGL_agl_LIBRARY "" CACHE STRING "Override AGL library to avoid Xcode 15 linker error" FORCE)
+endif()
+
 project(BrainMaintenanceDashboard
     VERSION 0.3.0
     DESCRIPTION "A cross-platform focus and brain maintenance dashboard"
