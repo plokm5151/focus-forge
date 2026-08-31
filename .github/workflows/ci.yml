@@ -70,8 +70,22 @@ jobs:
       - name: Build
         run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
 
+      # ---- Run windeployqt (Windows only) ----
+      - name: Deploy Windows Dependencies
+        if: matrix.os == 'windows-latest'
+        run: windeployqt build\bin\Release\FocusForgeApp.exe --qmldir qml
+
       # ---- Upload Artifacts ----
-      - name: Upload build artifacts
+      - name: Upload Windows Standalone App
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: FocusForge-Windows
+          path: build/bin/Release/
+          retention-days: 7
+
+      - name: Upload Other Artifacts
+        if: matrix.os != 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
           name: brain-maintenance-dashboard-${{ matrix.os }}
