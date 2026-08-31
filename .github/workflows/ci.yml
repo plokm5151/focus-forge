@@ -75,6 +75,13 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: windeployqt build\bin\Release\FocusForgeApp.exe --qmldir qml
 
+      # ---- Run macdeployqt (macOS only) ----
+      - name: Deploy macOS Dependencies
+        if: matrix.os == 'macos-latest'
+        run: |
+          macdeployqt build/FocusForgeApp.app -qmldir=qml -always-overwrite
+          cd build && zip -r FocusForgeApp.zip FocusForgeApp.app
+
       # ---- Upload Artifacts ----
       - name: Upload Windows Standalone App
         if: matrix.os == 'windows-latest'
@@ -84,8 +91,16 @@ jobs:
           path: build/bin/Release/
           retention-days: 7
 
-      - name: Upload Other Artifacts
-        if: matrix.os != 'windows-latest'
+      - name: Upload macOS Standalone App
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: FocusForge-macOS
+          path: build/FocusForgeApp.zip
+          retention-days: 7
+
+      - name: Upload Linux Artifacts
+        if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
           name: brain-maintenance-dashboard-${{ matrix.os }}

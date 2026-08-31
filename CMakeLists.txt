@@ -145,7 +145,7 @@ if(APPLE)
         COMMAND /usr/libexec/PlistBuddy -c "Add :NSDocumentsFolderUsageDescription string 'FocusForge needs access to your Documents folder to sync with Obsidian.'" $<TARGET_BUNDLE_DIR:${APP_TARGET}>/Contents/Info.plist || true
         COMMAND /usr/libexec/PlistBuddy -c "Add :NSDesktopFolderUsageDescription string 'FocusForge needs access to Desktop for analytics exports.'" $<TARGET_BUNDLE_DIR:${APP_TARGET}>/Contents/Info.plist || true
         COMMAND /usr/libexec/PlistBuddy -c "Add :NSDownloadsFolderUsageDescription string 'FocusForge needs access to Downloads for importing backups.'" $<TARGET_BUNDLE_DIR:${APP_TARGET}>/Contents/Info.plist || true
-        COMMAND codesign --force --deep --options runtime --entitlements ${CMAKE_CURRENT_SOURCE_DIR}/entitlements.plist -s - $<TARGET_BUNDLE_DIR:${APP_TARGET}>
+        COMMAND codesign --force --deep --options runtime --entitlements ${CMAKE_CURRENT_SOURCE_DIR}/entitlements.plist -s - $<TARGET_BUNDLE_DIR:${APP_TARGET}> || true
     )
 else()
     add_custom_command(TARGET ${APP_TARGET} POST_BUILD
