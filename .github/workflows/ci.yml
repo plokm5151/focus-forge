@@ -79,8 +79,8 @@ jobs:
       - name: Deploy macOS Dependencies
         if: matrix.os == 'macos-latest'
         run: |
-          macdeployqt build/FocusForgeApp.app -qmldir=qml -always-overwrite
-          cd build && zip -r FocusForgeApp.zip FocusForgeApp.app
+          macdeployqt build/bin/FocusForgeApp.app -qmldir=qml -always-overwrite
+          cd build/bin && zip -r FocusForgeApp.zip FocusForgeApp.app
 
       # ---- Upload Artifacts ----
       - name: Upload Windows Standalone App
@@ -96,7 +96,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: FocusForge-macOS
-          path: build/FocusForgeApp.zip
+          path: build/bin/FocusForgeApp.zip
           retention-days: 7
 
       - name: Upload Linux Artifacts
